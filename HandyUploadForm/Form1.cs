@@ -24,7 +24,7 @@ namespace HandyUploadForm
         public ConfigItem configItem;
         private string connStr;
         private SqlConnection sqlConn;
-        private string commpanyname;
+        private string companyIdentity;
 
         private static string accessTokenUrl = "https://api.qcda.shanghaiqixiu.org/restservices/lcipprodatarest/lcipprogetaccesstoken/query";
         private static string carRepairItemUrl = "https://api.qcda.shanghaiqixiu.org/restservices/lcipprodatarest/lcipprocarfixrecordadd/query";
@@ -108,7 +108,7 @@ namespace HandyUploadForm
         }
 
         //公司名字从数据库中查询得到
-        public void getCompanyName()
+        public void getCompanyIdentity()
         {
             //string filename = "companyname";
             // string companyname = null;
@@ -124,12 +124,12 @@ namespace HandyUploadForm
                 dbCon.Open();
                 using (SqlCommand cmd = dbCon.CreateCommand())
                 {
-                    cmd.CommandText = "select value from StringParameter where Name='公司名称 '";
+                    cmd.CommandText = "select value from StringParameter where id=100";
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            this.commpanyname = reader["value"].ToString();
+                            this.companyIdentity = reader["value"].ToString();
                         }
                         reader.Close();
                     }
@@ -212,13 +212,14 @@ namespace HandyUploadForm
         {
             SqlConnection dbCon = getConnection();
 
-            if (commpanyname == null)
+            if (companyIdentity == null)
             {
-                this.getCompanyName();
+                this.getCompanyIdentity();
             }
 
-            if (this.commpanyname == null)
+            if (this.companyIdentity == null)
             {
+                MessageBox.Show("没有读取到企业代码", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
             }
             List<CarRepaireRequest> requestList = new List<CarRepaireRequest>();
@@ -244,7 +245,7 @@ namespace HandyUploadForm
                     BasicInfo basicInfo = new BasicInfo();
                     basicInfo.vehicleplatenumber = getTrimString(sqlDataReader, "Car_no", "N/A");
                     basicInfo.gd_id = getTrimString(sqlDataReader, "gd_id", "N/A");
-                    basicInfo.companyname = this.commpanyname;
+                    basicInfo.companyname = this.companyIdentity;
                     basicInfo.vin = getTrimString(sqlDataReader, "VIN_CODE", "N/A");
                     if (basicInfo.vin.Length != 17)
                     {
@@ -413,20 +414,20 @@ namespace HandyUploadForm
         {
             this.Cursor = Cursors.WaitCursor;
             List<String> gd_ids = new List<String>();
-            for (int index=0; index<this.listView1.Items.Count; index++)
-            {
-                if (listView1.Items[index].Checked)
-                {
-                    if (listView1.Items[index].BackColor == Color.Red)
-                    {
-                        MessageBox.Show(listView1.Items[index].ToolTipText, "错误!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        this.Cursor = Cursors.Default;
-                        return;
-                    }
-                    String gd_id = String.Format("{0}", listView1.Items[index].Text);
-                    gd_ids.Add(gd_id);
-                }
-            }
+         //   for (int index=0; index<this.listView1.Items.Count; index++)
+          //  {
+          //      if (listView1.Items[index].Checked)
+          //      {
+           //         if (listView1.Items[index].BackColor == Color.Red)
+           //         {
+          //              MessageBox.Show(listView1.Items[index].ToolTipText, "错误!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+           //             this.Cursor = Cursors.Default;
+          //              return;
+            //        }
+           //         String gd_id = String.Format("{0}", listView1.Items[index].Text);
+          //          gd_ids.Add(gd_id);
+          //      }
+         //   }
             //get access_token
             LogHelper.WriteLog(typeof(Form1), "begin request access token from server");
             AccessTokenResponse accessTokenResponse = getToken();
@@ -478,7 +479,7 @@ namespace HandyUploadForm
 
         private void button3_Click(object sender, EventArgs e)
         {
-            this.listView1.Items.Clear();
+          //  this.listView1.Items.Clear();
             //得到日期
             String datestr = this.dateTimePicker1.Text;
             SqlConnection dbCon = getConnection();
@@ -508,7 +509,7 @@ namespace HandyUploadForm
                             String CUST_NM = reader["CUST_NM"].ToString();
                             String ERROR_DESP = reader["ERROR_DESP"].ToString();
 
-                            ListViewItem lvi =  this.listView1.Items.Add(GD_ID);
+                         //   ListViewItem lvi =  this.listView1.Items.Add(GD_ID);
 
                             String hint = (Car_No.Length<8) ? "车牌号长度不对" : "";
                             if (VIN_CODE.Trim().Length < 17)
@@ -519,17 +520,17 @@ namespace HandyUploadForm
                             {
                                 ERROR_DESP = "小修";
                             }
-                            lvi.SubItems.Add(GD_SN.Trim());
-                            lvi.SubItems.Add(Car_No.Trim());
-                            lvi.SubItems.Add(CUST_NM.Trim());
-                            lvi.SubItems.Add(VIN_CODE.Trim());
-                            lvi.SubItems.Add(ERROR_DESP.Trim());
+                     //       lvi.SubItems.Add(GD_SN.Trim());
+                      //      lvi.SubItems.Add(Car_No.Trim());
+                     //       lvi.SubItems.Add(CUST_NM.Trim());
+                     //       lvi.SubItems.Add(VIN_CODE.Trim());
+                    //        lvi.SubItems.Add(ERROR_DESP.Trim());
                             if (hint.Length > 0)
                             {
-                                lvi.ToolTipText = hint;
-                                lvi.BackColor = Color.Red;
+                   //             lvi.ToolTipText = hint;
+                    //            lvi.BackColor = Color.Red;
                             }
-                            lvi.EnsureVisible();
+                     //       lvi.EnsureVisible();
                         }
                         reader.Close();
                     }
@@ -555,23 +556,67 @@ namespace HandyUploadForm
         ToolTip toolTip = new ToolTip();
         private void listView1_MouseMove(object sender, MouseEventArgs e)
         {
-            ListViewItem lv = this.listView1.GetItemAt(e.X, e.Y);
-            if (lv != null)
-            {
+       //     ListViewItem lv = this.listView1.GetItemAt(e.X, e.Y);
+        //    if (lv != null)
+        //    {
                 
 
-                if (pointView.X != e.X || pointView.Y != e.Y)//比较当前位置和上一次鼠标的位置是否相同，防止tooltip因MouseMove事件不停刷新造成的闪烁问题，
-                {
-                    toolTip.SetToolTip(listView1, lv.ToolTipText);
-                }
-            }
-            else
-            {
-                toolTip.Hide(listView1);//当鼠标位置无listviewitem时，自动隐藏tooltip
-            }
-            pointView = new Point(e.X, e.Y);//存储本次的鼠标位置，为下次得位置比较准备
+       //         if (pointView.X != e.X || pointView.Y != e.Y)//比较当前位置和上一次鼠标的位置是否相同，防止tooltip因MouseMove事件不停刷新造成的闪烁问题，
+      //          {
+        //            toolTip.SetToolTip(listView1, lv.ToolTipText);
+     //           }
+        //    }
+        //    else
+        //    {
+         //       toolTip.Hide(listView1);//当鼠标位置无listviewitem时，自动隐藏tooltip
+         //   }
+        //    pointView = new Point(e.X, e.Y);//存储本次的鼠标位置，为下次得位置比较准备
         }
 
+        private void button4_Click(object sender, EventArgs e)
+        {
+            SortedDictionary<String, String> param = new SortedDictionary<string, string>();
+            param.Add("companyIdentity", "913101121322592441T");
+            param.Add("nonce", "54321");
+            param.Add("timestamp", "1608890828");
+            String secretKey = "EEE3854FB506A7001ABD8D108BFF79E1";
+            String  value = SignUtils.sign(param, secretKey);
+        }
 
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+            if (dataGridView1.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.RowIndex > -1)
+            {
+                if (e.ColumnIndex == 7)
+                {
+                   
+
+                    int RowIndex = dataGridView1.CurrentCell.RowIndex; //当前单bai元格所du在zhi行
+
+
+                    dataGridView1.Rows.Add();
+                   
+
+                    dataGridView1.Rows[RowIndex].Cells[0].Value = true;
+                    dataGridView1.Rows[RowIndex].Cells[1].Value = 1;
+                    dataGridView1.Rows[RowIndex].Cells[2].Value = 965;
+                    dataGridView1.Rows[RowIndex].Cells[3].Value = 123;
+                    dataGridView1.Rows[RowIndex].Cells[4].Value = "洒洒的";
+                    dataGridView1.Rows[RowIndex].Cells[5].Value = "上看到你啦";
+                    dataGridView1.Rows[RowIndex].Cells[6].Value = "https";
+
+                    
+
+                  //  String  s = dataGridView1.Rows[RowIndex].Cells[7].Value.ToString();
+
+                  //  MessageBox.Show(s);
+                }
+
+
+            }
+
+
+        }
     }
 }

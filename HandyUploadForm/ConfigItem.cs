@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HandyUploadForm;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
@@ -11,8 +12,8 @@ namespace CarRepairDataUpload
         public string DBUser;
         public string DBPassword;
         public string DBName;
-        public string CompanyCode;
-        public string CompanyPassword;
+        public string serverHost;
+        public string defaultImgUrl;
 
 
         public ConfigItem()
@@ -26,9 +27,8 @@ namespace CarRepairDataUpload
             DBUser = ConfigurationManager.AppSettings["DBUser"];
             DBPassword = ConfigurationManager.AppSettings["DBPassword"];
             DBName = ConfigurationManager.AppSettings["DBName"];
-            CompanyCode = ConfigurationManager.AppSettings["CompanyCode"];
-            CompanyPassword = ConfigurationManager.AppSettings["CompanyPassword"];
-
+            serverHost = ConfigurationManager.AppSettings["server_host"];
+            defaultImgUrl = ConfigurationManager.AppSettings["default_img_url"];
         }
 
 

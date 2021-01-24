@@ -36,5 +36,22 @@ namespace HandyUploadForm
             String sign = Md5Hex(secretKey + "|" + content); // 使用 MD5 计算签名字符串
             return sign;
         }
+
+        public static SignInfo sign()
+        {
+            SignInfo signInfo = new SignInfo();
+            Random rd = new Random();
+            signInfo.nonce = rd.Next().ToString();
+            signInfo.timestamp = TimeUtil.getCurrentSeconds().ToString();
+
+            SortedDictionary<String, String> param = new SortedDictionary<string, string>();
+            param.Add("companyIdentity", GlobalData.companyIdentity);
+            param.Add("nonce", signInfo.nonce);
+            param.Add("timestamp", signInfo.timestamp);
+            
+            String value = SignUtils.sign(param, GlobalData.secretKey);
+            signInfo.sign = value;
+            return signInfo;
+        }
     }
 }

@@ -8,9 +8,8 @@ namespace HandyUploadForm
     {
         public static long getCurrentSeconds()
         {
-            long currentTicks = DateTime.Now.Ticks;
-            DateTime dtFrom = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            return (currentTicks - dtFrom.Ticks) / 10000000;
+            TimeSpan ts = DateTime.Now - Convert.ToDateTime("1970-1-1").ToLocalTime();
+            return (long)ts.TotalSeconds;
         }
     }
 }

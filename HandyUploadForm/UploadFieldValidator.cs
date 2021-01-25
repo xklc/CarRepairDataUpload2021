@@ -85,7 +85,7 @@ namespace HandyUploadForm
 
     public class RepairInfoValidator
     {
-        public static ValidatorRet check(RepairInfo repairnfo)
+        public static ValidatorRet check(RepairInfoInternal repairnfo)
         {
             if (StringUtil.isEmpty(repairnfo.deliveryDate))
             {
@@ -103,14 +103,14 @@ namespace HandyUploadForm
             {
                 return new ValidatorRet(false, "结算编号不能为空");
             }
-            else if (repairnfo.repairItems == null || (StringUtil.isEmpty(repairnfo.repairItems.subtotal)) || repairnfo.repairItems.items.Count == 0)
-            {
-                return new ValidatorRet(false, "维修项目不能为空");
-            }
-            else if (repairnfo.repairParts == null || (StringUtil.isEmpty(repairnfo.repairParts.subtotal)) || repairnfo.repairParts.parts.Count == 0)
-            {
-                return new ValidatorRet(false, "维修配件不能为空");
-            }
+            //else if (repairnfo.repairItems == null || (StringUtil.isEmpty(repairnfo.repairItems.subtotal)) || repairnfo.repairItems.items.Count == 0)
+            //{
+            //    return new ValidatorRet(false, "维修项目不能为空");
+            //}
+            //else if (repairnfo.repairParts == null || (StringUtil.isEmpty(repairnfo.repairParts.subtotal)) || repairnfo.repairParts.parts.Count == 0)
+            //{
+            //    return new ValidatorRet(false, "维修配件不能为空");
+            //}
             return new ValidatorRet();
         }
       }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
@@ -40,8 +41,11 @@ namespace HandyUploadForm
 
         public RepairItemDetail()
         {
-            workHoursUnitPrice = "1.0";
-            workHoursFee = "1.0";
+            itemSeq = "1";
+            itemName = "";
+            settlementTime = "";
+            workHoursUnitPrice = "";
+            workHoursFee = "";
         }
 
     }
@@ -54,7 +58,14 @@ namespace HandyUploadForm
 
         public RepairItem()
         {
+            subtotal = "0";
             items = new List<RepairItemDetail>();
+        }
+        public RepairItem(String defaults)
+        {
+            subtotal = "0";
+            items = new List<RepairItemDetail>();
+            items.Add(new RepairItemDetail());
         }
     }
 
@@ -62,6 +73,7 @@ namespace HandyUploadForm
     {
         public String partSeq { get; set; }
         public String partName { get; set; }
+        public String partBrand { get; set; }
         public String partNo { get; set; }
         public String partUnitNumber { get; set; }
         public String partMoney { get; set; }
@@ -69,9 +81,16 @@ namespace HandyUploadForm
 
         public RepairPartDetail()
         {
-            partMoney = "1.0";
-            oneselfPart = "1.0";
+            partSeq = "1";
+            partName = "";
+            partBrand = "";
+            partNo = "";
+            partUnitNumber = "";
+            partMoney = "";
+            oneselfPart = "0";
         }
+
+
     }
 
 
@@ -82,7 +101,15 @@ namespace HandyUploadForm
         
         public RepairPart()
         {
+            subtotal = "0";
             parts = new List<RepairPartDetail>();
+        }
+
+        public RepairPart(String defaults)
+        {
+            subtotal = "0";
+            parts = new List<RepairPartDetail>();
+            parts.Add(new RepairPartDetail());
         }
     }
 
@@ -105,7 +132,7 @@ namespace HandyUploadForm
     }
 
     //维修信息
-    public class RepairInfo
+    public class RepairInfoInternal
     {
         public String sign { get; set; }
         public String nonce { get; set; }
@@ -120,9 +147,72 @@ namespace HandyUploadForm
         public RepairPart repairParts { get; set; }
     }
 
+    public class RepairInfo
+    {
+        public String sign { get; set; }
+        public String nonce { get; set; }
+        public String timestamp { get; set; }
+        public String companyIdentity { get; set; }
+        public String incomingInspectionId { get; set; }
+        public String deliveryDate { get; set; }
+        public String repairMileage { get; set; }
+        public String settlementDate { get; set; }
+        public String settlementSeq { get; set; }
+        public String repairItems { get; set; }
+        public String repairParts { get; set; }
+        public String otherFee { get; set; }
+        public String total { get; set; }
+        public String oldPartDisposal { get; set; }
+        public RepairInfo()
+        {
+            otherFee = "[{\"otherFeeSeq\": \"\",  \"project\": \"\",  \"otherFeeMoney\": \"\"  }]";
+            total = "";
+            oldPartDisposal = "3";
+        }
+
+        public static RepairInfo fromRepairInfoInternal(RepairInfoInternal repairInfoInternal)
+        {
+            RepairInfo repairInfo = new RepairInfo();
+            repairInfo.sign = repairInfoInternal.sign;
+            repairInfo.nonce = repairInfoInternal.nonce;
+            repairInfo.timestamp = repairInfoInternal.timestamp;
+            repairInfo.companyIdentity = repairInfoInternal.companyIdentity;
+            repairInfo.incomingInspectionId = repairInfoInternal.incomingInspectionId;
+            repairInfo.deliveryDate = repairInfoInternal.deliveryDate;
+            repairInfo.repairMileage = repairInfoInternal.repairMileage;
+            repairInfo.settlementDate = repairInfoInternal.settlementDate;
+            repairInfo.settlementSeq = repairInfoInternal.settlementSeq;
+            if (repairInfoInternal.repairItems==null || repairInfoInternal.repairItems.items.Count==0)
+            {
+                repairInfo.repairItems = JsonConvert.SerializeObject(new RepairItem());
+            }else { 
+                String tmpRepairItems = JsonConvert.SerializeObject(repairInfoInternal.repairItems) ;
+                repairInfo.repairItems = tmpRepairItems;
+            }
+            if (repairInfoInternal.repairParts == null || repairInfoInternal.repairParts.parts.Count == 0)
+            {
+                repairInfo.repairParts = JsonConvert.SerializeObject(new RepairPart());
+            } else { 
+                String tmpRepairParts = JsonConvert.SerializeObject(repairInfoInternal.repairParts);
+                repairInfo.repairParts = tmpRepairParts;
+            }
+
+            return repairInfo;
+        }
+    }
+
+
+
     public class Response
     {
         public int sign { get; set; }
+        public String message { get; set; }
+        public String data { get; set; }
+    }
+
+    public class CommonResponse
+    {
+        public int code { get; set; }
         public String message { get; set; }
         public String data { get; set; }
     }
@@ -137,6 +227,7 @@ namespace HandyUploadForm
         public String customer_name { get; set; }
         public String vin_code { get; set; }
         public String error_desc { get; set; }
+        public String oldPartDisposal { get; set; }
         public Image gp_pic { get; set; }
         public byte [] gp_pic_bytes { get; set; }
 
@@ -147,7 +238,7 @@ namespace HandyUploadForm
         public String gd_id { get; set; }
         public SignInfo signInfo { get; set; }
         public RepairItem repairItem { get; set; }
-        public RepairInfo repairPair { get; set; }
+        public RepairInfoInternal repairPair { get; set; }
     }
 
     public class SignInfo

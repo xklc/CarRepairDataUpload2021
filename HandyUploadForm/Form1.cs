@@ -219,7 +219,7 @@ namespace HandyUploadForm
             {
                 dbCon.Open();
                 SqlCommand sqlcmd = new SqlCommand();
-                string sql = string.Format("select d.gd_id,  C.PART_NM as partName, C.ORIGINAL_FACTORY_ID as partNo, A.QTY as partUnitNumber from DT_EM_CKLJ A JOIN DT_EM_CKD  B ON A.OUTPUT_ID =B.OUTPUT_ID join DT_EM_LJML C on A.PART_ID = C.PART_ID join DT_OM_GD D ON d.GD_ID=B.RELATIVE_ID  where  D.gd_id in ({0})", gd_ids_str);
+                string sql = string.Format("select d.gd_id,  C.PART_NM as partName, c.location as partBrand, C.ORIGINAL_FACTORY_ID as partNo, A.QTY as partUnitNumber from DT_EM_CKLJ A JOIN DT_EM_CKD  B ON A.OUTPUT_ID =B.OUTPUT_ID join DT_EM_LJML C on A.PART_ID = C.PART_ID join DT_OM_GD D ON d.GD_ID=B.RELATIVE_ID  where  D.gd_id in ({0})", gd_ids_str);
                 sqlcmd.CommandText = sql;
                 sqlcmd.Connection = dbCon;
 
@@ -233,6 +233,7 @@ namespace HandyUploadForm
                     RepairPartDetail repairItemDetail = new RepairPartDetail();
                     repairItemDetail.partName = getTrimString(sqlDataReader, "partName", "");
                     repairItemDetail.partNo = getTrimString(sqlDataReader, "partNo", "");
+                    repairItemDetail.partBrand = getTrimString(sqlDataReader, "partBrand", "");
                     repairItemDetail.partUnitNumber = getTrimString(sqlDataReader, "partUnitNumber", "");
 
                     RepairPart repairPart = null;
@@ -266,18 +267,18 @@ namespace HandyUploadForm
 
         public void getCarInfo(String date_str, out Dictionary<String, CardUploadInfo> carUploadInfo,
             out  Dictionary<String, CarDisplayInfo> carDisplayInfo,
-            out Dictionary<String, RepairInfo> repairInfo)
+            out Dictionary<String, RepairInfoInternal> repairInfo)
         {
             carUploadInfo = new Dictionary<String, CardUploadInfo>();
             carDisplayInfo = new Dictionary<String, CarDisplayInfo>();
-            repairInfo = new Dictionary<String, RepairInfo>();
+            repairInfo = new Dictionary<String, RepairInfoInternal>();
 
             SqlConnection dbCon = getConnection();
             try
             {
                 dbCon.Open();
                 SqlCommand sqlcmd = new SqlCommand();
-                string sql = string.Format("select a.GD_ID, a.GD_SN, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
+                string sql = string.Format("select a.GD_ID, a.GD_SN,case when (a.BADPART='旧配件已确认，并由托修方收回') then 1 when (a.BADPART='旧配件已确认，托修方申明放弃') then 2 when (a.BADPART='无旧件') then 3 else 2 end as BADPART, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
 //                string sql = string.Format("select a.GD_ID, a.GD_SN, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='2020-05-22'");
                 sqlcmd.CommandText = sql;
                 sqlcmd.Connection = dbCon;
@@ -289,7 +290,7 @@ namespace HandyUploadForm
 
                     CardUploadInfo tmpCardUploadInfo;
                     CarDisplayInfo tmpCarDisplayInfo;
-                    RepairInfo tmpRepairInfo;
+                    RepairInfoInternal tmpRepairInfo;
                     carUploadInfo.TryGetValue(gd_id, out tmpCardUploadInfo);
                     carDisplayInfo.TryGetValue(gd_id, out tmpCarDisplayInfo);
                     repairInfo.TryGetValue(gd_id, out tmpRepairInfo);
@@ -308,7 +309,7 @@ namespace HandyUploadForm
 
                     if (tmpRepairInfo == null)
                     {
-                        tmpRepairInfo = new RepairInfo();
+                        tmpRepairInfo = new RepairInfoInternal();
                         repairInfo[gd_id] = tmpRepairInfo;
                     }
 
@@ -355,8 +356,6 @@ namespace HandyUploadForm
                         }
 
                     }
-
-
 
                     tmpRepairInfo.companyIdentity = GlobalData.companyIdentity;
                     tmpRepairInfo.incomingInspectionId = getTrimString(sqlDataReader, "incomingInspectionId", "");
@@ -445,16 +444,16 @@ namespace HandyUploadForm
                 return;
             }
 
-            RepairInfo tmpRepairInfo;
-            repairInfo.TryGetValue(gd_id, out tmpRepairInfo);
+            RepairInfoInternal tmpRepairInfoInternal;
+            repairInfo.TryGetValue(gd_id, out tmpRepairInfoInternal);
             RepairItem tmpRepairItem;
             RepairPart tmpRepairPart;
             repairItems.TryGetValue(gd_id, out tmpRepairItem);
             repairParts.TryGetValue(gd_id, out tmpRepairPart);
-            tmpRepairInfo.repairItems = tmpRepairItem;
-            tmpRepairInfo.repairParts = tmpRepairPart;
+            tmpRepairInfoInternal.repairItems = tmpRepairItem;
+            tmpRepairInfoInternal.repairParts = tmpRepairPart;
 
-            validdatorRet = RepairInfoValidator.check(tmpRepairInfo);
+            validdatorRet = RepairInfoValidator.check(tmpRepairInfoInternal);
             if (!validdatorRet.checkResult)
             {
                 MessageBox.Show("维修记录上传，错误信息【" + validdatorRet.error_msg + "】", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -484,7 +483,7 @@ namespace HandyUploadForm
             tmpCarUploadInfo.companyIdentity = GlobalData.companyIdentity;
             tmpCarUploadInfo.drivingLicenseImg = imageUrl;
 
-            String url = configItem.serverHost+"/api/maintain/repair/car/upload";
+            String url = configItem.serverHost+"/repair/car/upload";
             string json = JsonConvert.SerializeObject(tmpCarUploadInfo);
             Console.WriteLine(json);
             var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
@@ -496,19 +495,32 @@ namespace HandyUploadForm
                 return;
             }
 
-            tmpRepairInfo.companyIdentity = GlobalData.companyIdentity;
-            tmpRepairInfo.nonce = signInfo.nonce;
-            tmpRepairInfo.sign = signInfo.sign;
-            tmpRepairInfo.timestamp = signInfo.timestamp;
+            tmpRepairInfoInternal.companyIdentity = GlobalData.companyIdentity;
+            tmpRepairInfoInternal.nonce = signInfo.nonce;
+            tmpRepairInfoInternal.sign = signInfo.sign;
+            tmpRepairInfoInternal.timestamp = signInfo.timestamp;
 
-            json = JsonConvert.SerializeObject(tmpRepairInfo);
+            RepairInfo repairInfo1 = RepairInfo.fromRepairInfoInternal(tmpRepairInfoInternal);
+
+
+            json = JsonConvert.SerializeObject(repairInfo1);
             Console.WriteLine(json);
             //MessageBox.Show(json);
-            String url2 = configItem.serverHost + "/api/maintain/repair/order/upload";
+            //System.IO.File.WriteAllText(@"json.txt", json, Encoding.UTF8);
+            String url2 = configItem.serverHost + "/repair/order/upload";
             restApiClient = new RestApiClient(url2, HttpVerbNew.POST, ContentType.JSON, json);
             response = restApiClient.MakeRequest();
-            Console.WriteLine(response);
-            MessageBox.Show(response);
+            if (response != null)
+            {
+                CommonResponse resp = (CommonResponse)JsonConvert.DeserializeObject(response, typeof(CommonResponse));
+                if (resp.code == 0)
+                {
+                    MessageBox.Show("上传成功");
+                }else
+                {
+                    MessageBox.Show(response);
+                }
+            }
 
             this.Cursor = Cursors.Default;
         }
@@ -520,7 +532,7 @@ namespace HandyUploadForm
 
         Dictionary<String, CardUploadInfo> carUploadInfo;
         Dictionary<String, CarDisplayInfo> carDisplayInfo;
-        Dictionary<String, RepairInfo> repairInfo;
+        Dictionary<String, RepairInfoInternal> repairInfo;
 
         Dictionary<String, RepairItem> repairItems;
         Dictionary<String, RepairPart> repairParts;
@@ -589,7 +601,8 @@ namespace HandyUploadForm
 
         private void button4_Click(object sender, EventArgs e)
         {
-
+            string aa = @"""";
+            MessageBox.Show(aa);
         }
 
         public static byte[] ImgToByt(Image img)
@@ -601,7 +614,7 @@ namespace HandyUploadForm
 
         public String getImageUrl(SignInfo signInfo, byte [] image_bytes)
         {
-            string postUrl = configItem.serverHost + "/api/maintain/upload/image";
+            string postUrl = configItem.serverHost + "/upload/image";
             postUrl = postUrl + "?companyIdentity=" + GlobalData.companyIdentity + "&nonce=" + signInfo.nonce + "&timestamp=" + signInfo.timestamp + "&sign=" + signInfo.sign;
             Console.WriteLine(postUrl);
             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
@@ -705,15 +718,15 @@ namespace HandyUploadForm
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            PictureAutoSizeForm picForm = new PictureAutoSizeForm();
+            //PictureAutoSizeForm picForm = new PictureAutoSizeForm();
 
-            //pictureBox1.GetType().GetProperty()
-            picForm.Width = pictureBox1.Image.Width;
-            picForm.Height = pictureBox1.Image.Height;
-            picForm.pictureBox1.Image = pictureBox1.Image;
+            ////pictureBox1.GetType().GetProperty()
+            //picForm.Width = pictureBox1.Image.Width;
+            //picForm.Height = pictureBox1.Image.Height;
+            //picForm.pictureBox1.Image = pictureBox1.Image;
 
 
-            picForm.ShowDialog();
+            //picForm.ShowDialog();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -730,28 +743,27 @@ namespace HandyUploadForm
                 dataGridView1.Columns[index].HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
                 dataGridView1.Columns[index].SortMode = DataGridViewColumnSortMode.NotSortable;
             }
-           // pictureBox1.Load(@"C:\Users\Leo\Desktop\廖宸宇\psc.jfif");
         }
 
         private void dataGridView1_Click(object sender, EventArgs e)
         {
-            int selectIndex = dataGridView1.CurrentRow.Index;
-            if (selectIndex < 0)
-            {
-                return;
-            }
+            //int selectIndex = dataGridView1.CurrentRow.Index;
+            //if (selectIndex < 0)
+            //{
+            //    return;
+            //}
 
-            if (dataGridView1.Rows[selectIndex].Selected == true)
-            {
-                String gd_id = dataGridView1.Rows[selectIndex].Cells[7].Value.ToString();
-                CarDisplayInfo cardDisplayInfo;
-                carDisplayInfo.TryGetValue(gd_id, out cardDisplayInfo);
+            //if (dataGridView1.Rows[selectIndex].Selected == true)
+            //{
+            //    String gd_id = dataGridView1.Rows[selectIndex].Cells[7].Value.ToString();
+            //    CarDisplayInfo cardDisplayInfo;
+            //    carDisplayInfo.TryGetValue(gd_id, out cardDisplayInfo);
 
-                if (cardDisplayInfo.gp_pic != null)
-                {
-                    this.pictureBox1.Image = cardDisplayInfo.gp_pic;
-                }
-            }
+            //    if (cardDisplayInfo.gp_pic != null)
+            //    {
+            //        this.pictureBox1.Image = cardDisplayInfo.gp_pic;
+            //    }
+            //}
         }
     }
 }

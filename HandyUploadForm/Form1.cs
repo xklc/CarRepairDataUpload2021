@@ -273,13 +273,25 @@ namespace HandyUploadForm
             carDisplayInfo = new Dictionary<String, CarDisplayInfo>();
             repairInfo = new Dictionary<String, RepairInfoInternal>();
 
+            String gd_sn = textBox1.Text.Trim();
+            String car_no = textBox2.Text.Trim();
+
             SqlConnection dbCon = getConnection();
             try
             {
                 dbCon.Open();
                 SqlCommand sqlcmd = new SqlCommand();
-                string sql = string.Format("select a.GD_ID, a.GD_SN,case when (a.BADPART='旧配件已确认，并由托修方收回') then 1 when (a.BADPART='旧配件已确认，托修方申明放弃') then 2 when (a.BADPART='无旧件') then 3 else 2 end as BADPART, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
+                string sql = string.Format("select a.GD_ID, a.GD_SN,case when (a.BADPART='旧配件已确认，并由托修方收回') then 1 when (a.BADPART='旧配件已确认，托修方申明放弃') then 2 when (a.BADPART='无旧件') then 3 else 2 end as BADPART, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cx_id=g.cx_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
 //                string sql = string.Format("select a.GD_ID, a.GD_SN, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='2020-05-22'");
+                if (gd_sn.Length > 0)
+                {
+                    sql += string.Format(" and a.GD_SN like '%{0}%'", gd_sn);
+                }
+
+                if (car_no.Length > 0)
+                {
+                    sql += string.Format(" and b.Car_No like '%{0}%'", car_no);
+                }
                 sqlcmd.CommandText = sql;
                 sqlcmd.Connection = dbCon;
 
@@ -315,6 +327,7 @@ namespace HandyUploadForm
 
                     tmpCardUploadInfo.companyIdentity = GlobalData.companyIdentity;
                     tmpCardUploadInfo.incomingInspectionId = getTrimString(sqlDataReader, "incomingInspectionId", "");
+                    tmpCardUploadInfo.repairOrderSeq = getTrimString(sqlDataReader, "GD_SN", "");
                     tmpCardUploadInfo.entrustRepair = getTrimString(sqlDataReader, "entrustRepair", "");
                     tmpCardUploadInfo.licensePlate = getTrimString(sqlDataReader, "licensePlate", "");
                     tmpCardUploadInfo.vin = getTrimString(sqlDataReader, "vin", "");
@@ -359,6 +372,7 @@ namespace HandyUploadForm
 
                     tmpRepairInfo.companyIdentity = GlobalData.companyIdentity;
                     tmpRepairInfo.incomingInspectionId = getTrimString(sqlDataReader, "incomingInspectionId", "");
+                    tmpRepairInfo.repairOrderSeq = getTrimString(sqlDataReader, "GD_SN", "");
                     tmpRepairInfo.deliveryDate = getTrimString(sqlDataReader, "deliveryDate", "");
                     tmpRepairInfo.repairMileage = getTrimString(sqlDataReader, "repairMileage", "0");
                     tmpRepairInfo.settlementDate = getTrimString(sqlDataReader, "settlementDate", "");
@@ -485,6 +499,7 @@ namespace HandyUploadForm
 
             String url = configItem.serverHost+"/repair/car/upload";
             string json = JsonConvert.SerializeObject(tmpCarUploadInfo);
+          //  MessageBox.Show(json);
             Console.WriteLine(json);
             var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
             string response = restApiClient.MakeRequest();            
@@ -505,7 +520,7 @@ namespace HandyUploadForm
 
             json = JsonConvert.SerializeObject(repairInfo1);
             Console.WriteLine(json);
-            //MessageBox.Show(json);
+        //    MessageBox.Show(json);
             //System.IO.File.WriteAllText(@"json.txt", json, Encoding.UTF8);
             String url2 = configItem.serverHost + "/repair/order/upload";
             restApiClient = new RestApiClient(url2, HttpVerbNew.POST, ContentType.JSON, json);

@@ -28,6 +28,8 @@ namespace HandyUploadForm
         public String drivingLicenseImg { get; set; }
         public String color { get; set; }
         public String brand { get; set; }
+
+        public String repairOrderSeq { get; set; }
     }
 
     //上传维修信息
@@ -139,6 +141,7 @@ namespace HandyUploadForm
         public String timestamp { get; set; }
         public String companyIdentity { get; set; }
         public String incomingInspectionId { get; set; }
+        public String repairOrderSeq { get; set; }
         public String deliveryDate { get; set; }
         public String repairMileage { get; set; }
         public String settlementDate { get; set; }
@@ -154,6 +157,7 @@ namespace HandyUploadForm
         public String timestamp { get; set; }
         public String companyIdentity { get; set; }
         public String incomingInspectionId { get; set; }
+        public String repairOrderSeq { get; set; }
         public String deliveryDate { get; set; }
         public String repairMileage { get; set; }
         public String settlementDate { get; set; }
@@ -178,6 +182,7 @@ namespace HandyUploadForm
             repairInfo.timestamp = repairInfoInternal.timestamp;
             repairInfo.companyIdentity = repairInfoInternal.companyIdentity;
             repairInfo.incomingInspectionId = repairInfoInternal.incomingInspectionId;
+            repairInfo.repairOrderSeq = repairInfoInternal.repairOrderSeq;
             repairInfo.deliveryDate = repairInfoInternal.deliveryDate;
             repairInfo.repairMileage = repairInfoInternal.repairMileage;
             repairInfo.settlementDate = repairInfoInternal.settlementDate;

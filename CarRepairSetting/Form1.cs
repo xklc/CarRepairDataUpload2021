@@ -372,6 +372,7 @@ namespace CarRepairSetting
                     carRepaireRequest.access_token = accessTokenResponse.access_token;
                     BasicInfo basicInfo = new BasicInfo();
                     basicInfo.vehicleplatenumber = getTrimString(sqlDataReader, "Car_no", "N/A");
+
                     basicInfo.gd_id = getTrimString(sqlDataReader, "gd_id", "N/A");
                     basicInfo.companyname = companyname;
                     basicInfo.vin = getTrimString(sqlDataReader, "VIN_CODE", vinCodeList[new Random().Next(vinCodeList.Count)]);

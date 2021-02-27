@@ -42,7 +42,7 @@ namespace HandyUploadForm
             return sqlConn;
         }
 
-        private void dbExecNoReturn(string sql)
+        private void intialTableSchema()
         {
             SqlConnection dbCon = getConnection();
             try
@@ -53,8 +53,33 @@ namespace HandyUploadForm
                 string createsql = "IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='dataupload_gd' AND xtype='U') CREATE TABLE [dbo].[dataupload_gd] ([id] [int] IDENTITY (1, 1) NOT NULL , [gd_id] [int] NOT NULL ,[cl_id] [int] NOT NULL ,[settle_dt] [datetime] NULL ,	[is_uploaded] [bit] NULL ,[request_str] [text] COLLATE Chinese_PRC_CI_AS NULL ,	[response_str] [nchar] (200) COLLATE Chinese_PRC_CI_AS NULL ,	[create_time] [datetime] default getdate() )";
                 sqlcmd.CommandText = createsql;
                 sqlcmd.ExecuteNonQuery();
+                string updateSql = "IF COL_LENGTH('DT_OM_GD', 'UPLOAD_STATUS') IS NULL ALTER TABLE DT_OM_GD ADD UPLOAD_STATUS INT DEFAULT 0 WITH VALUES";
+                sqlcmd.CommandText = updateSql;
+                sqlcmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                dbCon.Close();
+            }
+        }
+
+
+        private void dbExecNoReturn(string sql)
+        {
+            SqlConnection dbCon = getConnection();
+            try
+            {
+                dbCon.Open();
+                SqlCommand sqlcmd = new SqlCommand();
+                sqlcmd.Connection = dbCon;
                 sqlcmd.CommandText = sql;
                 sqlcmd.ExecuteNonQuery();
+
+
             }
             catch (Exception ex)
             {
@@ -281,7 +306,7 @@ namespace HandyUploadForm
             {
                 dbCon.Open();
                 SqlCommand sqlcmd = new SqlCommand();
-                string sql = string.Format("select a.GD_ID, a.GD_SN,case when (a.BADPART='旧配件已确认，并由托修方收回') then 1 when (a.BADPART='旧配件已确认，托修方申明放弃') then 2 when (a.BADPART='无旧件') then 3 else 2 end as BADPART, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cx_id=g.cx_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
+                string sql = string.Format("select a.GD_ID, a.GD_SN, a.upload_status, case when (a.BADPART='旧配件已确认，并由托修方收回') then 1 when (a.BADPART='旧配件已确认，托修方申明放弃') then 2 when (a.BADPART='无旧件') then 3 else 2 end as BADPART, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cx_id=g.cx_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
 //                string sql = string.Format("select a.GD_ID, a.GD_SN, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='2020-05-22'");
                 if (gd_sn.Length > 0)
                 {
@@ -345,6 +370,9 @@ namespace HandyUploadForm
 
 
                     tmpCarDisplayInfo.gd_id = getTrimString(sqlDataReader, "GD_ID", "");
+                    int upload_status = 0;
+                    int.TryParse(getTrimString(sqlDataReader, "upload_status", "0"), out upload_status);
+                    tmpCarDisplayInfo.upload_status = upload_status;
                     tmpCarDisplayInfo.car_no = getTrimString(sqlDataReader, "licensePlate", "");
                     tmpCarDisplayInfo.gd_sn = getTrimString(sqlDataReader, "GD_SN", "");
                     tmpCarDisplayInfo.customer_name = getTrimString(sqlDataReader, "vehicleOwner", "");
@@ -352,7 +380,7 @@ namespace HandyUploadForm
                     tmpCarDisplayInfo.vin_code = getTrimString(sqlDataReader, "vin", "");
                     tmpCarDisplayInfo.error_desc = getTrimString(sqlDataReader, "ERROR_DESP", "");
 
-                        byte[] gp_pic_byte = (byte[])sqlDataReader["GD_PIC"];
+                    byte[] gp_pic_byte = (byte[])sqlDataReader["GD_PIC"];
                     
                
 
@@ -393,14 +421,14 @@ namespace HandyUploadForm
 
        
 
-        private bool updateUploadStatus(string req_json_data, string resp_json_data, string gd_id)
+        private bool updateUploadStatus( string gd_id)
         {
             //TODO: 更新表格
             //            string sql = string.Format("update dataupload_gd set is_uploaded=1, request_str=\'{0}\', response_str=\'{1}\' where gd_id={2}",
             //                 req_json_data, resp_json_data, gd_id);
            // req_json_data = req_json_data.Replace("\\", "");
            // resp_json_data = resp_json_data.Replace("\\", "");
-            string sql = string.Format("insert into dataupload_gd(gd_id,cl_id, is_uploaded,request_str,response_str) values({0},1,0, \'{1}\',\'{2}\')", gd_id, req_json_data, resp_json_data);
+            string sql = string.Format("update dt_om_gd set upload_status=1 where gd_id={0}", gd_id);
 
             this.dbExecNoReturn(sql);
             return true;
@@ -531,7 +559,10 @@ namespace HandyUploadForm
                 if (resp.code == 0)
                 {
                     MessageBox.Show("上传成功");
-                }else
+                    updateUploadStatus(gd_id);
+                    reloadUploadStatus();
+                }
+                else
                 {
                     MessageBox.Show(response);
                 }
@@ -552,7 +583,7 @@ namespace HandyUploadForm
         Dictionary<String, RepairItem> repairItems;
         Dictionary<String, RepairPart> repairParts;
 
-        private void button3_Click(object sender, EventArgs e)
+        public void reloadUploadStatus()
         {
             //  this.listView1.Items.Clear();
             //得到日期
@@ -574,10 +605,15 @@ namespace HandyUploadForm
             repairParts = getRepairPartsDetail(carDisplayInfo);
 
             this.Cursor = Cursors.WaitCursor;
-            
+
             foreach (var item in carDisplayInfo.Values)
             {
                 int index = this.dataGridView1.Rows.Add();
+
+                if (item.upload_status == 1)
+                {
+                    this.dataGridView1.Rows[index].DefaultCellStyle.BackColor = Color.FromArgb(186, 201, 236);
+                }
                 this.dataGridView1.Rows[index].Cells[1].Value = item.gd_sn;
                 this.dataGridView1.Rows[index].Cells[2].Value = item.incomingInspectionId;
                 this.dataGridView1.Rows[index].Cells[3].Value = item.car_no;
@@ -589,6 +625,11 @@ namespace HandyUploadForm
             dataGridView1.ClearSelection();
 
             this.Cursor = Cursors.Default;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            reloadUploadStatus();
         }
 
         private Point pointView = new Point(0, 0);//鼠标位置 外部存储变量
@@ -752,6 +793,9 @@ namespace HandyUploadForm
                 MessageBox.Show("请检查数据库是否配置了企业身份【companyIdentity】或者密钥【secretKey】","错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();
             }
+
+            //初始化表schema
+            intialTableSchema();
 
             for (int index=0; index<dataGridView1.ColumnCount; index++)
             {

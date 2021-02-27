@@ -236,6 +236,8 @@ namespace HandyUploadForm
         public Image gp_pic { get; set; }
         public byte [] gp_pic_bytes { get; set; }
 
+        public int upload_status { get; set; }
+
     }
 
     public class GDCardInfo

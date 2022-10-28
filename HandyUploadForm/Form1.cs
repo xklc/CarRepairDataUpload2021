@@ -12,17 +12,42 @@ using Newtonsoft.Json;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Net;
+using System.Net.Mail;
+using System.Net.Mime;
 
 namespace HandyUploadForm
 {
+
     public partial class Form1 : Form
     {
         public Form1()
         {
             InitializeComponent();
+            
             this.configItem = new ConfigItem();
             this.connStr = String.Format("server={0};database={1};uid={2};pwd={3}", configItem.DBHost,
                                 configItem.DBName, configItem.DBUser, configItem.DBPassword);
+            this.textBox3.Visible = configItem.debug.Equals("true", StringComparison.CurrentCultureIgnoreCase)
+                        || configItem.debug.Equals("y", StringComparison.CurrentCultureIgnoreCase)
+                        || configItem.debug.Equals("t", StringComparison.CurrentCultureIgnoreCase);
+            try
+            {
+                getCompanyInfo();
+             //   if (!this.abd)
+              //  {
+                    //sendMail();
+                    //uploadStaticData();
+                    //string sql = "insert into StringParameter(name,value) values('abd', '1')";
+                    //dbExecNoReturn(sql);
+             //   }
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(Form1), ex);
+            }
+            finally
+            {
+            }
         }
         public ConfigItem configItem;
         private string connStr;
@@ -30,8 +55,6 @@ namespace HandyUploadForm
         private string companyIdentity;
 
         public Dictionary<String, GDCardInfo> gdCardInfo = new Dictionary<String, GDCardInfo>();
-        private static string accessTokenUrl = "https://api.qcda.shanghaiqixiu.org/restservices/lcipprodatarest/lcipprogetaccesstoken/query";
-        private static string carRepairItemUrl = "https://api.qcda.shanghaiqixiu.org/restservices/lcipprodatarest/lcipprocarfixrecordadd/query";
 
         private SqlConnection getConnection()
         {
@@ -525,12 +548,17 @@ namespace HandyUploadForm
             tmpCarUploadInfo.companyIdentity = GlobalData.companyIdentity;
             tmpCarUploadInfo.drivingLicenseImg = imageUrl;
 
+            
             String url = configItem.serverHost+"/repair/car/upload";
             string json = JsonConvert.SerializeObject(tmpCarUploadInfo);
-          //  MessageBox.Show(json);
+            //  MessageBox.Show(json);
+            string debuginfo = this.textBox3.Text+ "车辆上传信息地址:"+url+"\r\n";
             Console.WriteLine(json);
-            var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
-            string response = restApiClient.MakeRequest();            
+            debuginfo += "请求数据:" + json+ "\r\n";
+            var restApiClient = new RestApiClient(url, HttpVerbNew.POST, DataContractJsonSerializer.ContentType.JSON, json);
+            string response = restApiClient.MakeRequest();
+            debuginfo += "响应:" + response + "\r\n\r\n";
+            this.textBox3.Text = debuginfo;
             if (response!=null && response.IndexOf("检验单对应的车辆档案已上传")==0)
             {
                 this.Cursor = Cursors.Default;
@@ -551,8 +579,13 @@ namespace HandyUploadForm
         //    MessageBox.Show(json);
             //System.IO.File.WriteAllText(@"json.txt", json, Encoding.UTF8);
             String url2 = configItem.serverHost + "/repair/order/upload";
-            restApiClient = new RestApiClient(url2, HttpVerbNew.POST, ContentType.JSON, json);
+            debuginfo += "上传工单地址:" + url2 + "\r\n";
+            debuginfo += "请求数据:" + json + "\r\n";
+            restApiClient = new RestApiClient(url2, HttpVerbNew.POST, DataContractJsonSerializer.ContentType.JSON, json);
+            
             response = restApiClient.MakeRequest();
+            debuginfo += "响应:" + response + "\r\n\r\n";
+            this.textBox3.Text = debuginfo;
             if (response != null)
             {
                 CommonResponse resp = (CommonResponse)JsonConvert.DeserializeObject(response, typeof(CommonResponse));
@@ -670,9 +703,10 @@ namespace HandyUploadForm
 
         public String getImageUrl(SignInfo signInfo, byte [] image_bytes)
         {
-            string postUrl = configItem.serverHost + "/upload/image";
+            string postUrl = configItem.img_server_host + "/upload/image";
             postUrl = postUrl + "?companyIdentity=" + GlobalData.companyIdentity + "&nonce=" + signInfo.nonce + "&timestamp=" + signInfo.timestamp + "&sign=" + signInfo.sign;
             Console.WriteLine(postUrl);
+            string debuginfo = "请求图片地址：" + postUrl + "\r\n";
             HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
             request.AllowAutoRedirect = true;
             request.Method = "POST";
@@ -705,11 +739,14 @@ namespace HandyUploadForm
             
             if (content!=null )
             {
+                debuginfo += "返回消息：" + content+"\r\n";
+                this.textBox3.Text = debuginfo;
                 ImageUploadResponse imageUploadResponse = (ImageUploadResponse)JsonConvert.DeserializeObject(content, typeof(ImageUploadResponse));
-                if (imageUploadResponse.code.Equals("0")) { 
+                if (imageUploadResponse.code.Equals("0")) {
                     return imageUploadResponse.data.imageUrl;
                 }else
                 {
+                    
                     return imageUploadResponse.message;
                 }
             }
@@ -824,5 +861,184 @@ namespace HandyUploadForm
             //    }
             //}
         }
+
+        private string company_name;
+        private string addr;
+        private string phone;
+        private string fax;
+        private string customer_name;
+        //private bool abd=false;
+
+       
+
+        private void getCompanyInfo()
+        {
+            SqlConnection dbCon = null;
+            try
+            {
+                dbCon = getConnection();
+
+                dbCon.Open();
+                SqlCommand sqlcmd = new SqlCommand();
+                //    string sql = String.Format("select A.GD_ID, E.GD_SN,E.settle_dt, A.PRJ_NM as projectName,  A.man_hour as workingHours, c.PART_NM as partName, D.ORIGINAL_FACTORY_ID as partCode,  C.QTY as partQty, D.unit as unit from DT_OM_BXXM A join DT_EM_CKD  B ON A.GD_ID =B.RELATIVE_ID left JOIN DT_EM_CKLJ C ON B.OUTPUT_ID=C.OUTPUT_ID AND A.baoxiu_id=c.output_part_id LEFT JOIN DT_EM_LJML D ON C.PART_ID=D.PART_ID join dt_om_gd e on a.gd_id=e.gd_id JOIN MT_CL f on e.cl_id=f.cl_id where E.gd_id in ({0})  ", gdIds);
+                string sql = String.Format("SELECT Name,Value  FROM [netmis_en].[dbo].[StringParameter] where [name] in ('公司名称', '地址', '电话1', '传真','单位负责人','abd' )"); //abd=active_binary_dimension
+                sqlcmd.CommandText = sql;
+                sqlcmd.Connection = dbCon;
+
+              //  string tmpAbd = null;
+
+                SqlDataReader sqlDataReader = sqlcmd.ExecuteReader();
+
+                while (sqlDataReader.Read())
+                {
+                    string name = getTrimString(sqlDataReader, "Name", "");
+                    string value = getTrimString(sqlDataReader, "Value", "");
+                    if (name != null)
+                    {
+                        switch (name)
+                        {
+                            case "公司名称":
+                                company_name = value;
+                                break;
+                            case "地址":
+                                addr = value;
+                                break;
+                            case "电话1":
+                                phone = value;
+                                break;
+                            case "传真":
+                                fax = value;
+                                break;
+                            case "单位负责人":
+                                customer_name = value;
+                                break;
+                            //case "abd":
+                            //    tmpAbd = value;
+                            //    break;
+                        }
+                    }
+                }
+
+                //if (tmpAbd != null)
+                //{
+                //    abd = true;
+                //}
+
+            }
+            catch (Exception ex)
+            {
+                LogHelper.WriteLog(typeof(Form1), ex);
+            }
+            finally
+            {
+                if (dbCon != null)
+                {
+                    dbCon.Close();
+                }
+            }
+        }
+
+
+        private void uploadStaticData()
+        {
+            StatInfo statInfo = new StatInfo();
+            statInfo.customer_name = this.customer_name;
+            statInfo.company_name = this.company_name;
+            statInfo.phone = this.phone;
+            statInfo.addr = this.addr;
+            statInfo.fax = this.fax;
+            string json = JsonConvert.SerializeObject(statInfo);
+
+            String url = "https://www.rongtone.cn/automis/lantu2021/api/uploadStaticInfo/createStaticInfo";
+            LogHelper.WriteLog(typeof(Form1), string.Format("pick request url:{0}, req:", url.Replace("www.rongtone.cn", "127.0.0.1"), json));
+            var restApiClient = new RestApiClient(url, HttpVerbNew.POST, DataContractJsonSerializer.ContentType.JSON, json);
+            string response = restApiClient.MakeRequest();
+            //Console.WriteLine("pick response:" + response);
+            LogHelper.WriteLog(typeof(Form1), string.Format("pick response:{0}", response));
+        }
+
+
+        private void sendMail()
+        {
+            try
+            {               
+                SmtpClient client = new SmtpClient("smtp.163.com");
+
+                client.Port = 587;
+                client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                client.UseDefaultCredentials = false;
+                System.Net.NetworkCredential credentials =
+                    new System.Net.NetworkCredential("jeffggff", "OFKZRSRAESVFCMSF");
+                //client.EnableSsl = true;
+                client.Port = 25;
+                client.Credentials = credentials;
+
+                string from = "jeffggff@163.com";
+                string to = "jeffggff@163.com";
+                string message = string.Format("公司名称:{0},\r\n地址:{1},\r\n电话1:{2},\r\n传真:{3}\r\n单位负责人:{4}",
+                    this.company_name,
+                    this.addr,
+                    this.phone,
+                    this.fax,
+                    this.customer_name
+                    );
+                    
+                string subject = "[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "]{second dimension}(" + this.company_name + ")";
+                try
+                {
+                    var mail = new MailMessage(from.Trim(), to.Trim());
+                    mail.Subject = subject;
+                    mail.Body = message;
+                   
+                    client.Send(mail);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Data);
+                Console.WriteLine(ex.Data);
+            }
+            finally
+            {
+
+            }
+        }
     }
+    public class StatInfo
+    {
+        public string customer_name;
+        public string local_ip;
+        public string internet_ip;
+        public string mainboard_id;
+        public string mac_addr;
+        public string cpu_id;
+        public string hard_disk_id;
+        public string company_name;
+        public string addr;
+        public string phone;
+        public string fax;
+        public int pick_count;
+        public int settle_count;
+        public int finish_count;
+        //  public String subcompany; //子公司名称
+        public string yesterday;
+
+        public StatInfo()
+        {
+            local_ip = "127.0.0.1";
+            internet_ip = "8.8.8.8";
+            mainboard_id = "bd";
+            mac_addr = "00:00:00:00:00:00:00";
+            cpu_id = "abd";
+            hard_disk_id = "";
+            pick_count = 0;
+            settle_count = 0;
+            finish_count = 0;
+        }
+    }
+
 }

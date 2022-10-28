@@ -30,5 +30,10 @@ namespace CarRepairDataUpload
         {
             System.Environment.Exit(0);
         }
+
+        public void Start(string[] args)
+        {
+            this.OnStart(args);
+        }
     }
 }

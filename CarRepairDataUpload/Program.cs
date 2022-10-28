@@ -12,12 +12,16 @@ namespace CarRepairDataUpload
         /// </summary>
         static void Main()
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
-            {
-                new CarRepairDataUpload()
-            };
-            ServiceBase.Run(ServicesToRun);
+            //ServiceBase[] ServicesToRun;
+            //ServicesToRun = new ServiceBase[]
+            //{
+            //    new CarRepairDataUpload()
+            //};
+            //ServiceBase.Run(ServicesToRun);
+
+            log4net.Config.XmlConfigurator.Configure();
+            CarRepairDataUpload service1 = new CarRepairDataUpload();
+            service1.Start(null);
         }
     }
 }

@@ -16,6 +16,8 @@ namespace CarRepairDataUpload
         private SqlConnection sqlConn;
         private string commpanyname;
 
+        
+
         private static string accessTokenUrl = "https://api.qcda.shanghaiqixiu.org/restservices/lcipprodatarest/lcipprogetaccesstoken/query";
         private static string carRepairItemUrl = "https://api.qcda.shanghaiqixiu.org/restservices/lcipprodatarest/lcipprocarfixrecordadd/query";
 
@@ -54,6 +56,7 @@ namespace CarRepairDataUpload
             this.configItem = configItem;
             this.connStr = String.Format("server={0};database={1};uid={2};pwd={3}", configItem.DBHost,
                                 configItem.DBName, configItem.DBUser, configItem.DBPassword);
+
         }
 
         private AccessTokenResponse getToken()

@@ -297,7 +297,7 @@ namespace CarRepairSetting
         //公司名字从数据库中查询得到
         public string getCompanyName()
         {
-            string filename = "companyname";
+          //  string filename = "companyname";
             string companyname = null;
             //if (File.Exists(filename))
             //{

@@ -13,6 +13,8 @@ namespace CarRepairDataUpload
         public string DBPassword;
         public string DBName;
         public string serverHost;
+        public string debug;
+        public string img_server_host;
         //public string defaultImgUrl;
 
 
@@ -28,7 +30,9 @@ namespace CarRepairDataUpload
             DBPassword = ConfigurationManager.AppSettings["DBPassword"];
             DBName = ConfigurationManager.AppSettings["DBName"];
             serverHost = ConfigurationManager.AppSettings["server_host"];
-         //   defaultImgUrl = ConfigurationManager.AppSettings["default_img_url"];
+            img_server_host = ConfigurationManager.AppSettings["img_server_host"];
+            debug = ConfigurationManager.AppSettings["debug"];
+            //   defaultImgUrl = ConfigurationManager.AppSettings["default_img_url"];
         }
     }
 }

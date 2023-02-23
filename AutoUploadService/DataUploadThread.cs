@@ -649,7 +649,7 @@ namespace AutoUploadService
                 {
                     dbCon.Open();
                     SqlCommand sqlcmd = new SqlCommand();
-                    string sql = string.Format("select t1.gd_sn,t1.upload_status,t1.settle_dt, t1.gd_id, t2.vin_code, t2.car_no, t1.in_dt, t3.miles, t4.gd_nm, t2.car_oil, t3.error_desp, t5.cust_nm from dt_om_gd t1 left join mt_cl t2 on t1.cl_id = t2.cl_id left join DT_OM_JJJC t3 on t1.gd_id = t3.gd_id left join mt_gdfl t4 on t1.gd_type_id = t4.id left join MT_KH t5 on t1.kh_id=t5.kh_id where t1.gd_id in ({0}) and len(ltrim(rtrim(t2.vin_code)))=17", gdIds);
+                    string sql = string.Format("select t1.gd_sn,t1.upload_status,t1.settle_dt, t1.gd_id, t2.vin_code, t2.car_no,t2.regist_no, t1.in_dt, t3.miles, t4.gd_nm, t2.car_oil, t3.error_desp, t5.cust_nm from dt_om_gd t1 left join mt_cl t2 on t1.cl_id = t2.cl_id left join DT_OM_JJJC t3 on t1.gd_id = t3.gd_id left join mt_gdfl t4 on t1.gd_type_id = t4.id left join MT_KH t5 on t1.kh_id=t5.kh_id where t1.gd_id in ({0}) and len(ltrim(rtrim(t2.vin_code)))=17", gdIds);
                     // string sql = string.Format("select t1.gd_sn,t1.upload_status,t1.settle_dt, t1.gd_id, t2.vin_code, t2.car_no, t1.in_dt, t3.miles, t4.gd_nm, t2.car_oil, t3.error_desp, t5.cust_nm from dt_om_gd t1 left join mt_cl t2 on t1.cl_id = t2.cl_id left join DT_OM_JJJC t3 on t1.gd_id = t3.gd_id left join mt_gdfl t4 on t1.gd_type_id = t4.id left join MT_KH t5 on t1.kh_id=t5.kh_id where t1.gd_id in ({0}) ", gdIds);
                     sqlcmd.CommandText = sql;
                     sqlcmd.Connection = dbCon;
@@ -679,6 +679,12 @@ namespace AutoUploadService
                         tmpPickCarInfo.serviceType = getTrimString(sqlDataReader, "gd_nm", "");
                         tmpPickCarInfo.fuelType = getOilType(getTrimString(sqlDataReader, "car_oil", ""));
                         tmpPickCarInfo.faultDesc = getTrimString(sqlDataReader, "error_desp", "小修");
+
+                        //2023-02-23 由原来的默认为 1 修改为: 判断
+                       // MT CL.REGIST NO 的值是否为空，不为空取 1，为空取 2) REGIST NO 为软件车辆中的营运证号码 +
+                        string regist_no = getTrimString(sqlDataReader, "regist_no", "");
+                        tmpPickCarInfo.natureOfUse = regist_no.Length > 0 ? 1 : 2;
+
                     }
 
                     sqlDataReader.Close();

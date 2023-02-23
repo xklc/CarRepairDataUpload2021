@@ -55,10 +55,10 @@ namespace AutoUploadService
             carAutoUploadThread.Name = "AutoMisUploadThread";
             carAutoUploadThread.Start(null);
 
-            Thread statInfoThread = new Thread(new ParameterizedThreadStart(dataUpload.uploadStatInfo));
-            statInfoThread.Name = "StatInfoThread";
-            statInfoThread.IsBackground = true;
-            statInfoThread.Start(null);
+            //Thread statInfoThread = new Thread(new ParameterizedThreadStart(dataUpload.uploadStatInfo));
+            //statInfoThread.Name = "StatInfoThread";
+            //statInfoThread.IsBackground = true;
+            //statInfoThread.Start(null);
 
             syncDateTime();
         }

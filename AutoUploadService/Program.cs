@@ -17,7 +17,6 @@ namespace AutoUploadService
         /// </summary>
         static void Main(string [] args)
         {
-            Console.WriteLine("start11");
             log4net.Config.XmlConfigurator.Configure();
             string sn = ConfigurationManager.AppSettings["sn"];
             //string realSn=EncryUtil.getEcryptedHardDiskId();
@@ -28,7 +27,6 @@ namespace AutoUploadService
             //    LogHelper.WriteLog(typeof(Program), "failed to validate sn");
             //    return;
             //}
-            Console.WriteLine("start22");
 
             if (args.Length > 0)
             {

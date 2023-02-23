@@ -1,28 +1,58 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.Text;
 
 namespace HandyUploadForm
 {
+    public class ConfigItem
+    {
+        public string DBHost;
+        public string DBUser;
+        public string DBPassword;
+        public string DBName;
+        public string serverHost;
+        public int cmdTimeOut;
+        public static string appId;
+        public static string secret;
+
+
+        public ConfigItem()
+        {
+            this.loadConf();
+        }
+
+        public void loadConf()
+        {
+            DBHost = ConfigurationManager.AppSettings["DBHost"];
+            DBUser = ConfigurationManager.AppSettings["DBUser"];
+            DBPassword = ConfigurationManager.AppSettings["DBPassword"];
+            DBName = ConfigurationManager.AppSettings["DBName"];
+            serverHost = ConfigurationManager.AppSettings["server_host"];
+            cmdTimeOut = Convert.ToInt32(ConfigurationManager.AppSettings["SqlCmdTimeOut"]);
+        }
+
+
+    }
     public class SignInfo
     {
         public String appId;
         public String sign;
-        public String nonce;
+        public long nonce;
         public String timestamp;
         public static Random rd = new Random();
         public SignInfo()
         {
-            
-            this.appId = GlobalData.appid;
-            this.nonce = rd.Next().ToString();       
+
+            this.appId = ConfigItem.appId;
+            this.nonce = rd.Next();
             this.timestamp = TimeUtil.getCurrentMillSeconds().ToString();
         }
     }
     //接车信息
-    public class PickCarInfo:SignInfo
+    public class PickCarInfo : SignInfo
     {
         public String vin { get; set; }
         public String vpn { get; set; }
@@ -33,10 +63,10 @@ namespace HandyUploadForm
         public String fuelType { get; set; }
         public String requirement { get; set; }
         public String faultDesc { get; set; }
-        public int  natureOfUse { get; set; }
+        public int natureOfUse { get; set; }
         public String carPhoto { get; set; }
         public String drivingPermitPhoto { get; set; }
-        
+
         public PickCarInfo()
         {
             natureOfUse = 1;
@@ -45,7 +75,7 @@ namespace HandyUploadForm
             drivingPermitPhoto = "";
         }
     }
-    
+
     //配件信息上传
     public class RepairItem
     {
@@ -53,9 +83,9 @@ namespace HandyUploadForm
         public String brandName { get; set; }
         public String partType { get; set; }
         public String partCode { get; set; }
-        public String partQty { get; set; }
+        public Double partQty { get; set; }
         public String unit { get; set; }
-        
+
         public RepairItem()
         {
             brandName = "";
@@ -66,7 +96,7 @@ namespace HandyUploadForm
     {
         public String projectName { get; set; }
         public String projectType { get; set; }
-        public String workingHours { get; set; }
+        public Double workingHours { get; set; }
 
 
         public override bool Equals(object obj)
@@ -84,11 +114,12 @@ namespace HandyUploadForm
         public RepairProject()
         {
             projectType = "";
+            workingHours = 0.0;
             repairPartList = new List<RepairItem>();
         }
     }
-    
-    public class RepairItemInfo:SignInfo
+
+    public class RepairItemInfo : SignInfo
     {
         public String orderCode { get; set; }
         public List<RepairProject> repairProjectList { get; set; }
@@ -98,27 +129,58 @@ namespace HandyUploadForm
             repairProjectList = new List<RepairProject>();
         }
     }
-    
+
     //结算信息
-    public class SettleInfo:SignInfo
+    public class SettleInfo : SignInfo
     {
         public String orderCode { get; set; }
-        public String totalCost { get; set; }
+        public Decimal totalCost { get; set; }
         public String payTime { get; set; }
-        
+
         public SettleInfo()
         {
-            totalCost="0";
+            totalCost = 0;
         }
     }
-    
-  
+
+
+    public class UpdateRepairInfoByOrderCode : SignInfo
+    {
+        public String orderCode { get; set; }
+        public String vin { get; set; }
+        public String vpn { get; set; }
+        public String repairTime { get; set; }
+        public String payTime { get; set; }
+        public List<RepairProject> repairProjectList { get; set; }
+
+
+        public UpdateRepairInfoByOrderCode(PickCarInfo pickCarInfo, RepairItemInfo repairItemInfo, SettleInfo settleInfo)
+        {
+            if (pickCarInfo != null)
+            {
+                orderCode = pickCarInfo.orderCode;
+                vin = pickCarInfo.vin;
+                vpn = pickCarInfo.vpn;
+                repairTime = pickCarInfo.repairTime;
+            }
+            if (settleInfo != null)
+            {
+                payTime = settleInfo.payTime;
+            }
+            if (repairItemInfo != null)
+            {
+                repairProjectList = repairItemInfo.repairProjectList;
+            }
+        }
+    }
+
+
     //上传维修信息
-    public class RepairItemDetail:SignInfo
+    public class RepairItemDetail : SignInfo
     {
         public String itemSeq { get; set; }
         public String itemName { get; set; }
-        public String settlementTime  { get; set; }
+        public String settlementTime { get; set; }
         public String workHoursUnitPrice { get; set; }
         public String workHoursFee { get; set; }
 
@@ -133,7 +195,7 @@ namespace HandyUploadForm
 
     }
 
-    public class CompanyErrRepairRecord:SignInfo
+    public class CompanyErrRepairRecord : SignInfo
     {
         public String vpn { get; set; }
         public String repairTime { get; set; }
@@ -142,19 +204,19 @@ namespace HandyUploadForm
         public String partCode { get; set; }
         public String partName { get; set; }
         public String partType { get; set; }
-        public String partQty { get; set; }
+        public Double partQty { get; set; }
         public String projectName { get; set; }
         public String workingHours { get; set; }
         public String vin { get; set; }
         public String orderCode { get; set; }
-        
+
         public CompanyErrRepairRecord()
         {
             projectType = "";
             partType = "";
         }
     }
-    
+
 
     public class ValidatorRet
     {
@@ -174,7 +236,7 @@ namespace HandyUploadForm
         }
     }
 
-    
+
 
     public class Response
     {
@@ -191,27 +253,4 @@ namespace HandyUploadForm
     }
 
     //界面显示字段信息
-    public class CarDisplayInfo
-    {
-        public String gd_sn { get; set; }
-       // public String incomingInspectionId { get; set; }
-        public String car_no { get; set; }
-        public String customer_name { get; set; }
-        public String vin_code { get; set; }
-        public String error_desc { get; set; }
-        public String oldPartDisposal { get; set; }
-        public Image gp_pic { get; set; }
-       // public byte [] gp_pic_bytes { get; set; }
-
-        public int upload_status { get; set; }
-
-    }
-
-    public class GDCardInfo
-    {
-        public String gd_id { get; set; }
-        public SignInfo signInfo { get; set; }
-        public RepairItem repairItem { get; set; }
-       // public RepairInfoInternal repairPair { get; set; }
-    }
 }

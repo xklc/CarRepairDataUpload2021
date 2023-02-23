@@ -17,15 +17,6 @@ namespace DataContractJsonSerializer
         PUT,
         DELETE
     }
-
-    public class URL
-    {
-        public static string PICKUP_CAR_URL = "/repairRecord/insert"; //接车信息上传接口
-        public static string REPAIR_ITEM_URL = "/repairRecord/updateRepairItemByOrderCode"; //配件信息上传接口
-        public static string SETTLE_INFO_URL = "/repairRecord/updateSettleInfoByOrderCode"; //结算信息上传接口
-        public static string REPAIR_INFO_URL = "/repairRecord/updateRepairInfoByOrderCode"; //更新错误信息
-        public static string COMPANY_ERROR_URL = "/repairRecord/queryCompanyErrRepairRecord"; //查询错误信息
-    }
     public class ContentType//根据Postman整理，可以添加
     {
         public static string Text = "text/plain";

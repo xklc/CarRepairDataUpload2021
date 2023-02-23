@@ -6,7 +6,7 @@ namespace HandyUploadForm
 {
     public class GlobalData
     {
-        public static String appid;
-        public static String secret;
+        public static String companyIdentity;
+        public static String secretKey;
     }
 }

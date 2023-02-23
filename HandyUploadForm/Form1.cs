@@ -12,12 +12,8 @@ using Newtonsoft.Json;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Net;
-<<<<<<< HEAD
-using com.rongtong.car;
-=======
 using System.Net.Mail;
 using System.Net.Mime;
->>>>>>> 0244969a396bca3271f7ddecd4b138135cbb43f9
 
 namespace HandyUploadForm
 {
@@ -31,17 +27,6 @@ namespace HandyUploadForm
             this.configItem = new ConfigItem();
             this.connStr = String.Format("server={0};database={1};uid={2};pwd={3}", configItem.DBHost,
                                 configItem.DBName, configItem.DBUser, configItem.DBPassword);
-<<<<<<< HEAD
-            this.textBox3.Visible = configItem.debug.Equals("true");
-            carOidMapping["0"] = "A";
-            carOidMapping["1"] = "A";
-            carOidMapping["2"] = "B";
-            carOidMapping["4"] = "F";
-            carOidMapping["5"] = "E";
-            carOidMapping["20"] = "C"; //电
-
-            setting.NullValueHandling = NullValueHandling.Ignore;
-=======
             this.textBox3.Visible = configItem.debug.Equals("true", StringComparison.CurrentCultureIgnoreCase)
                         || configItem.debug.Equals("y", StringComparison.CurrentCultureIgnoreCase)
                         || configItem.debug.Equals("t", StringComparison.CurrentCultureIgnoreCase);
@@ -63,21 +48,14 @@ namespace HandyUploadForm
             finally
             {
             }
->>>>>>> 0244969a396bca3271f7ddecd4b138135cbb43f9
         }
         public ConfigItem configItem;
         private string connStr;
         private SqlConnection sqlConn;
         private string companyIdentity;
-        private Dictionary<String, String> carOidMapping = new Dictionary<string, string>();
 
         public Dictionary<String, GDCardInfo> gdCardInfo = new Dictionary<String, GDCardInfo>();
-<<<<<<< HEAD
-        JsonSerializerSettings setting = new JsonSerializerSettings();
-=======
->>>>>>> 0244969a396bca3271f7ddecd4b138135cbb43f9
 
-        
         private SqlConnection getConnection()
         {
             if (sqlConn == null || sqlConn.State == System.Data.ConnectionState.Closed)
@@ -155,7 +133,7 @@ namespace HandyUploadForm
         }
 
         //公司名字从数据库中查询得到
-        public void getAppId()
+        public void getCompanyIdentity()
         {
             //string filename = "companyname";
             // string companyname = null;
@@ -171,7 +149,7 @@ namespace HandyUploadForm
                 dbCon.Open();
                 using (SqlCommand cmd = dbCon.CreateCommand())
                 {
-                    cmd.CommandText = "select name, value from StringParameter where name in ('appid', 'secret')";
+                    cmd.CommandText = "select name, value from StringParameter where name in ('companyIdentity', 'secretKey')";
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -179,13 +157,13 @@ namespace HandyUploadForm
                            String name = reader["name"].ToString().Trim();
                            String value = reader["value"].ToString().Trim();
 
-                            if (name.Equals("appid"))
+                            if (name.Equals("companyIdentity"))
                             {
-                                GlobalData.appid = value;
+                                GlobalData.companyIdentity = value;
                                 this.companyIdentity = value;
-                            }else if (name.Equals("secret"))
+                            }else if (name.Equals("secretKey"))
                             {
-                                GlobalData.secret = value;
+                                GlobalData.secretKey = value;
                             }
                         }
                         reader.Close();
@@ -209,160 +187,139 @@ namespace HandyUploadForm
 
      
         //得到维修项目明细
-        //public Dictionary<String, RepairItem> getRepairItemDetail(Dictionary<String, CarDisplayInfo> cardDisplayInfo)
-        //{
-        //    Dictionary<String, RepairItem> repairItems = new Dictionary<String, RepairItem>();
+        public Dictionary<String, RepairItem> getRepairItemDetail(Dictionary<String, CarDisplayInfo> cardDisplayInfo)
+        {
+            Dictionary<String, RepairItem> repairItems = new Dictionary<String, RepairItem>();
 
-        //    List<String> gd_ids = new List<String>();
-        //    foreach (var gd_id in cardDisplayInfo.Keys)
-        //    {
-        //        gd_ids.Add(gd_id);
-        //    }
+            List<String> gd_ids = new List<String>();
+            foreach (var gd_id in cardDisplayInfo.Keys)
+            {
+                gd_ids.Add(gd_id);
+            }
 
-        //    string gd_ids_str = string.Join(",", gd_ids.ToArray());
+            string gd_ids_str = string.Join(",", gd_ids.ToArray());
 
-        //    SqlConnection dbCon = getConnection();
-        //    try
-        //    {
-        //        dbCon.Open();
-        //        SqlCommand sqlcmd = new SqlCommand();
-        //        string sql = string.Format("select gd_id,prj_nm as itemName,MAN_HOUR as settlementTime from DT_OM_BXXM where gd_id in ({0})", gd_ids_str);
-        //        sqlcmd.CommandText = sql;
-        //        sqlcmd.Connection = dbCon;
+            SqlConnection dbCon = getConnection();
+            try
+            {
+                dbCon.Open();
+                SqlCommand sqlcmd = new SqlCommand();
+                string sql = string.Format("select gd_id,prj_nm as itemName,MAN_HOUR as settlementTime from DT_OM_BXXM where gd_id in ({0})", gd_ids_str);
+                sqlcmd.CommandText = sql;
+                sqlcmd.Connection = dbCon;
 
 
-        //        SqlDataReader sqlDataReader = sqlcmd.ExecuteReader();
-        //        Dictionary<String, Double> subtotals = new Dictionary<string, double>();
-        //        while (sqlDataReader.Read())
-        //        {
-        //            string gd_id = getTrimString(sqlDataReader, "gd_id", "");
+                SqlDataReader sqlDataReader = sqlcmd.ExecuteReader();
+                Dictionary<String, Double> subtotals = new Dictionary<string, double>();
+                while (sqlDataReader.Read())
+                {
+                    string gd_id = getTrimString(sqlDataReader, "gd_id", "");
 
-        //            RepairItemDetail repairItemDetail = new RepairItemDetail();
-        //            repairItemDetail.itemName = getTrimString(sqlDataReader, "itemName", "");
-        //            repairItemDetail.settlementTime = getTrimString(sqlDataReader, "settlementTime", "0");
+                    RepairItemDetail repairItemDetail = new RepairItemDetail();
+                    repairItemDetail.itemName = getTrimString(sqlDataReader, "itemName", "");
+                    repairItemDetail.settlementTime = getTrimString(sqlDataReader, "settlementTime", "0");
 
-        //            RepairItem repairItem = null;
-        //            repairItems.TryGetValue(gd_id, out repairItem);
-        //            if (repairItem == null)
-        //            {
-        //                repairItem = new RepairItem();
-        //                repairItems.Add(gd_id, repairItem);
-        //            }
-        //            Double subtotal;
-        //            subtotals.TryGetValue(gd_id, out subtotal);
-        //            subtotal += Convert.ToDouble(repairItemDetail.settlementTime);
-        //            repairItem.subtotal = subtotal.ToString();
+                    RepairItem repairItem = null;
+                    repairItems.TryGetValue(gd_id, out repairItem);
+                    if (repairItem == null)
+                    {
+                        repairItem = new RepairItem();
+                        repairItems.Add(gd_id, repairItem);
+                    }
+                    Double subtotal;
+                    subtotals.TryGetValue(gd_id, out subtotal);
+                    subtotal += Convert.ToDouble(repairItemDetail.settlementTime);
+                    repairItem.subtotal = subtotal.ToString();
 
-        //            int cnt = repairItem.items.Count+ 1;
-        //            repairItemDetail.itemSeq = cnt.ToString();
-        //            repairItem.items.Add(repairItemDetail);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //    finally
-        //    {
-        //        dbCon.Close();
-        //    }
+                    int cnt = repairItem.items.Count+ 1;
+                    repairItemDetail.itemSeq = cnt.ToString();
+                    repairItem.items.Add(repairItemDetail);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                dbCon.Close();
+            }
 
-        //    return repairItems;
-        //}
+            return repairItems;
+        }
 
 
         //计算维修配件列表
-        //public Dictionary<String, RepairPart> getRepairPartsDetail(Dictionary<String, CarDisplayInfo> cardDisplayInfo)
-        //{
-        //    Dictionary<String, RepairPart> repairParts = new Dictionary<String, RepairPart>();
-
-        //    List<String> gd_ids = new List<String>();
-        //    foreach (var gd_id in cardDisplayInfo.Keys)
-        //    {
-        //        gd_ids.Add(gd_id);
-        //    }
-
-        //    string gd_ids_str = string.Join(",", gd_ids.ToArray());
-
-        //    SqlConnection dbCon = getConnection();
-        //    try
-        //    {
-        //        dbCon.Open();
-        //        SqlCommand sqlcmd = new SqlCommand();
-        //        string sql = string.Format("select d.gd_id,  C.PART_NM as partName, c.location as partBrand, C.ORIGINAL_FACTORY_ID as partNo, A.QTY as partUnitNumber from DT_EM_CKLJ A JOIN DT_EM_CKD  B ON A.OUTPUT_ID =B.OUTPUT_ID join DT_EM_LJML C on A.PART_ID = C.PART_ID join DT_OM_GD D ON d.GD_ID=B.RELATIVE_ID  where  D.gd_id in ({0})", gd_ids_str);
-        //        sqlcmd.CommandText = sql;
-        //        sqlcmd.Connection = dbCon;
-
-
-        //        SqlDataReader sqlDataReader = sqlcmd.ExecuteReader();
-        //        Dictionary<String, Double> subtotals = new Dictionary<string, double>();
-        //        while (sqlDataReader.Read())
-        //        {
-        //            string gd_id = getTrimString(sqlDataReader, "gd_id", "");
-
-        //            RepairPartDetail repairItemDetail = new RepairPartDetail();
-        //            repairItemDetail.partName = getTrimString(sqlDataReader, "partName", "");
-        //            repairItemDetail.partNo = getTrimString(sqlDataReader, "partNo", "");
-        //            repairItemDetail.partBrand = getTrimString(sqlDataReader, "partBrand", "");
-        //            repairItemDetail.partUnitNumber = getTrimString(sqlDataReader, "partUnitNumber", "");
-
-        //            RepairPart repairPart = null;
-        //            repairParts.TryGetValue(gd_id, out repairPart);
-        //            if (repairPart == null)
-        //            {
-        //                repairPart = new RepairPart();
-        //                repairParts.Add(gd_id, repairPart);
-        //            }
-        //            Double subtotal;
-        //            subtotals.TryGetValue(gd_id, out subtotal);
-        //            subtotal += Convert.ToDouble(repairItemDetail.partUnitNumber);
-        //            repairPart.subtotal = subtotal.ToString();
-
-        //            int cnt = repairPart.parts.Count + 1;
-        //            repairItemDetail.partSeq = cnt.ToString();
-        //            repairPart.parts.Add(repairItemDetail);
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //    finally
-        //    {
-        //        dbCon.Close();
-        //    }
-
-        //    return repairParts;
-        //}
-
-        public String getOilType(String oirTypeInArmis)
+        public Dictionary<String, RepairPart> getRepairPartsDetail(Dictionary<String, CarDisplayInfo> cardDisplayInfo)
         {
-            String oilTypeInLanTu;
-            carOidMapping.TryGetValue(oirTypeInArmis, out oilTypeInLanTu);
+            Dictionary<String, RepairPart> repairParts = new Dictionary<String, RepairPart>();
 
-            if (oilTypeInLanTu == null)
+            List<String> gd_ids = new List<String>();
+            foreach (var gd_id in cardDisplayInfo.Keys)
             {
-                oilTypeInLanTu = "Z"; //其他
+                gd_ids.Add(gd_id);
             }
 
-            return oilTypeInLanTu;
+            string gd_ids_str = string.Join(",", gd_ids.ToArray());
+
+            SqlConnection dbCon = getConnection();
+            try
+            {
+                dbCon.Open();
+                SqlCommand sqlcmd = new SqlCommand();
+                string sql = string.Format("select d.gd_id,  C.PART_NM as partName, c.location as partBrand, C.ORIGINAL_FACTORY_ID as partNo, A.QTY as partUnitNumber from DT_EM_CKLJ A JOIN DT_EM_CKD  B ON A.OUTPUT_ID =B.OUTPUT_ID join DT_EM_LJML C on A.PART_ID = C.PART_ID join DT_OM_GD D ON d.GD_ID=B.RELATIVE_ID  where  D.gd_id in ({0})", gd_ids_str);
+                sqlcmd.CommandText = sql;
+                sqlcmd.Connection = dbCon;
+
+
+                SqlDataReader sqlDataReader = sqlcmd.ExecuteReader();
+                Dictionary<String, Double> subtotals = new Dictionary<string, double>();
+                while (sqlDataReader.Read())
+                {
+                    string gd_id = getTrimString(sqlDataReader, "gd_id", "");
+
+                    RepairPartDetail repairItemDetail = new RepairPartDetail();
+                    repairItemDetail.partName = getTrimString(sqlDataReader, "partName", "");
+                    repairItemDetail.partNo = getTrimString(sqlDataReader, "partNo", "");
+                    repairItemDetail.partBrand = getTrimString(sqlDataReader, "partBrand", "");
+                    repairItemDetail.partUnitNumber = getTrimString(sqlDataReader, "partUnitNumber", "");
+
+                    RepairPart repairPart = null;
+                    repairParts.TryGetValue(gd_id, out repairPart);
+                    if (repairPart == null)
+                    {
+                        repairPart = new RepairPart();
+                        repairParts.Add(gd_id, repairPart);
+                    }
+                    Double subtotal;
+                    subtotals.TryGetValue(gd_id, out subtotal);
+                    subtotal += Convert.ToDouble(repairItemDetail.partUnitNumber);
+                    repairPart.subtotal = subtotal.ToString();
+
+                    int cnt = repairPart.parts.Count + 1;
+                    repairItemDetail.partSeq = cnt.ToString();
+                    repairPart.parts.Add(repairItemDetail);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                dbCon.Close();
+            }
+
+            return repairParts;
         }
 
-        Dictionary<String, PickCarInfo> pickCarInfo;
-        Dictionary<String, RepairItemInfo> repairItemInfos;
-        Dictionary<String, SettleInfo> settleInfo;
-        Dictionary<String, CarDisplayInfo> carDisplayInfo;
-
-        public void getCarInfo(String date_str, out Dictionary<String, PickCarInfo> pickCarInfo,
-            out Dictionary<String, RepairItemInfo> repairItemInfos,
-            out Dictionary<String, SettleInfo> settleInfo,
-            out Dictionary<String, CarDisplayInfo> carDisplayInfo
-            )
+        public void getCarInfo(String date_str, out Dictionary<String, CardUploadInfo> carUploadInfo,
+            out  Dictionary<String, CarDisplayInfo> carDisplayInfo,
+            out Dictionary<String, RepairInfoInternal> repairInfo)
         {
-            pickCarInfo = new Dictionary<string, PickCarInfo>();
-            repairItemInfos = new Dictionary<string, RepairItemInfo>();
-            settleInfo = new Dictionary<string, SettleInfo>();
-            carDisplayInfo = new Dictionary<string, CarDisplayInfo>();
+            carUploadInfo = new Dictionary<String, CardUploadInfo>();
+            carDisplayInfo = new Dictionary<String, CarDisplayInfo>();
+            repairInfo = new Dictionary<String, RepairInfoInternal>();
 
             String gd_sn = textBox1.Text.Trim();
             String car_no = textBox2.Text.Trim();
@@ -372,16 +329,16 @@ namespace HandyUploadForm
             {
                 dbCon.Open();
                 SqlCommand sqlcmd = new SqlCommand();
-                string sql = string.Format("select t1.gd_sn,t1.upload_status,t1.settle_dt, t1.gd_id, t2.vin_code, t2.car_no, t1.in_dt, t3.miles, t4.gd_nm, t2.car_oil, t3.error_desp, t5.cust_nm from dt_om_gd t1 left join mt_cl t2 on t1.cl_id = t2.cl_id left join DT_OM_JJJC t3 on t1.gd_id = t3.gd_id left join mt_gdfl t4 on t1.gd_type_id = t4.id left join MT_KH t5 on t1.kh_id=t5.kh_id where t1.settle_dt >= '{0} 00:00:00' and t1.settle_dt<='{0} 23:59:59'", date_str);
-                //                string sql = string.Format("select a.GD_ID, a.GD_SN, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='2020-05-22'");
+                string sql = string.Format("select a.GD_ID, a.GD_SN, a.upload_status, case when (a.BADPART='旧配件已确认，并由托修方收回') then 1 when (a.BADPART='旧配件已确认，托修方申明放弃') then 2 when (a.BADPART='无旧件') then 3 else 2 end as BADPART, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cx_id=g.cx_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='{0}'", date_str);
+//                string sql = string.Format("select a.GD_ID, a.GD_SN, a.GD_SN as settlementSeq,convert(char(10), a.SETTLE_DT,120) as settlementDate, convert(char(10), a.IN_DT,120) as deliveryDate, b.Car_No as licensePlate,  b.VIN_CODE as vin, c.CUST_NM as vehicleOwner, c.CUST_NM as entrustRepair,  isnull(b.ENGINE_NO, '') engineNum, isnull(c.LINKMAN,'') contact, isnull(c.TEL1,'') contactDetails, isnull(b.gearbox_type, 1) obd,     case when (b.CAR_OIL=0 ) then   '轻型汽油车'  when (b.CAR_OIL=1 ) then  '重型汽油车'  when (b.CAR_OIL=2 ) then  '柴油车'  when (b.CAR_OIL=3 ) then  '其它车'  when (b.CAR_OIL=4 ) then  'LPG燃料车'  when (b.CAR_OIL=5 ) then  'CNG燃料车'  else  '其它车'  end as carType, g.CAR_TYPE as vehicleType,  b.CAR_SYMBOL as vehicleClassCode,  isnull(b.CAR_COLOR,'') color,  d.ERROR_DESP,   d.CAR_INFO as incomingInspectionId,  e.VENDOR as brand,  isnull(d.MILES,'0') repairMileage,  isnull(f.GD_PIC,'') GD_PIC   from DT_OM_GD a    join MT_CL b on a.cl_id=b.cl_id   join MT_KH c on a.KH_ID=c.KH_ID    join DT_OM_JJJC d on a.gd_id=d.gd_id   join MT_CC e on b.cc_id=e.cc_id  join MT_CX g on b.cc_id=g.cc_id  left join DT_OM_GDTP f on a.gd_id=f.gd_id where 1=1    and a.is_settle=1 and SUBSTRING(CONVERT(varchar(100), a.SETTLE_DT, 20), 1, 10)='2020-05-22'");
                 if (gd_sn.Length > 0)
                 {
-                    sql += string.Format(" and t1.gd_sn like '%{0}%'", gd_sn);
+                    sql += string.Format(" and a.GD_SN like '%{0}%'", gd_sn);
                 }
 
                 if (car_no.Length > 0)
                 {
-                    sql += string.Format(" and t2.Car_No like '%{0}%'", car_no);
+                    sql += string.Format(" and b.Car_No like '%{0}%'", car_no);
                 }
                 sqlcmd.CommandText = sql;
                 sqlcmd.Connection = dbCon;
@@ -389,128 +346,89 @@ namespace HandyUploadForm
                 SqlDataReader sqlDataReader = sqlcmd.ExecuteReader();
                 while (sqlDataReader.Read())
                 {
-                    gd_sn = getTrimString(sqlDataReader, "gd_sn", "");
+                    string gd_id = getTrimString(sqlDataReader, "gd_id", "");
 
+                    CardUploadInfo tmpCardUploadInfo;
                     CarDisplayInfo tmpCarDisplayInfo;
-                    PickCarInfo tmpPickCarInfo;
-                    SettleInfo tmpSettleInfo;
+                    RepairInfoInternal tmpRepairInfo;
+                    carUploadInfo.TryGetValue(gd_id, out tmpCardUploadInfo);
+                    carDisplayInfo.TryGetValue(gd_id, out tmpCarDisplayInfo);
+                    repairInfo.TryGetValue(gd_id, out tmpRepairInfo);
 
-                    carDisplayInfo.TryGetValue(gd_sn, out tmpCarDisplayInfo);                    
-                    pickCarInfo.TryGetValue(gd_sn, out tmpPickCarInfo);
-                    settleInfo.TryGetValue(gd_sn, out tmpSettleInfo);
-                    
+                    if (tmpCardUploadInfo == null)
+                    {
+                        tmpCardUploadInfo = new CardUploadInfo();
+                        carUploadInfo[gd_id] = tmpCardUploadInfo;
+                    }
 
                     if (tmpCarDisplayInfo == null)
                     {
                         tmpCarDisplayInfo = new CarDisplayInfo();
-                        carDisplayInfo[gd_sn] = tmpCarDisplayInfo;
+                        carDisplayInfo[gd_id] = tmpCarDisplayInfo;
                     }
 
-                    if (tmpPickCarInfo == null)
+                    if (tmpRepairInfo == null)
                     {
-                        tmpPickCarInfo = new PickCarInfo();
-                        pickCarInfo[gd_sn] = tmpPickCarInfo;
+                        tmpRepairInfo = new RepairInfoInternal();
+                        repairInfo[gd_id] = tmpRepairInfo;
                     }
 
+                    tmpCardUploadInfo.companyIdentity = GlobalData.companyIdentity;
+                    tmpCardUploadInfo.incomingInspectionId = getTrimString(sqlDataReader, "incomingInspectionId", "");
+                    tmpCardUploadInfo.repairOrderSeq = getTrimString(sqlDataReader, "GD_SN", "");
+                    tmpCardUploadInfo.entrustRepair = getTrimString(sqlDataReader, "entrustRepair", "");
+                    tmpCardUploadInfo.licensePlate = getTrimString(sqlDataReader, "licensePlate", "");
+                    tmpCardUploadInfo.vin = getTrimString(sqlDataReader, "vin", "");
+                    tmpCardUploadInfo.vehicleType = getTrimString(sqlDataReader, "vehicleType", "");
+                    tmpCardUploadInfo.engineNum = getTrimString(sqlDataReader, "engineNum", "");
+                    tmpCardUploadInfo.vehicleOwner = getTrimString(sqlDataReader, "vehicleOwner", "");
+                    tmpCardUploadInfo.entrustRepair = getTrimString(sqlDataReader, "entrustRepair", "");
+                    tmpCardUploadInfo.contact = getTrimString(sqlDataReader, "contact", "");
+                    tmpCardUploadInfo.contactDetails = getTrimString(sqlDataReader, "contactDetails", "");
+                    tmpCardUploadInfo.carType = getTrimString(sqlDataReader, "carType", "");
+                    tmpCardUploadInfo.vehicleClassCode = getTrimString(sqlDataReader, "vehicleClassCode", "");
+                    tmpCardUploadInfo.obd = getTrimString(sqlDataReader, "obd", "");
+                    tmpCardUploadInfo.color = getTrimString(sqlDataReader, "color", "");
+                    tmpCardUploadInfo.brand = getTrimString(sqlDataReader, "brand", "");
 
-                    if (tmpSettleInfo == null)
-                    {
-                        tmpSettleInfo = new SettleInfo();                        
-                        settleInfo[gd_sn] = tmpSettleInfo;
-                    }
 
-                    //展示信息
+                    tmpCarDisplayInfo.gd_id = getTrimString(sqlDataReader, "GD_ID", "");
                     int upload_status = 0;
                     int.TryParse(getTrimString(sqlDataReader, "upload_status", "0"), out upload_status);
                     tmpCarDisplayInfo.upload_status = upload_status;
-                    tmpCarDisplayInfo.car_no = getTrimString(sqlDataReader, "car_no", "");
-                    tmpCarDisplayInfo.gd_sn = getTrimString(sqlDataReader, "gd_sn", "");
-                    tmpCarDisplayInfo.customer_name = getTrimString(sqlDataReader, "cust_nm", "");
-                    tmpCarDisplayInfo.vin_code = getTrimString(sqlDataReader, "vin_code", "");
-                    tmpCarDisplayInfo.error_desc = getTrimString(sqlDataReader, "error_desp", "");
+                    tmpCarDisplayInfo.car_no = getTrimString(sqlDataReader, "licensePlate", "");
+                    tmpCarDisplayInfo.gd_sn = getTrimString(sqlDataReader, "GD_SN", "");
+                    tmpCarDisplayInfo.customer_name = getTrimString(sqlDataReader, "vehicleOwner", "");
+                    tmpCarDisplayInfo.incomingInspectionId = getTrimString(sqlDataReader, "incomingInspectionId", "");
+                    tmpCarDisplayInfo.vin_code = getTrimString(sqlDataReader, "vin", "");
+                    tmpCarDisplayInfo.error_desc = getTrimString(sqlDataReader, "ERROR_DESP", "");
 
-
-                    //接车信息
-                    tmpPickCarInfo.vin = getTrimString(sqlDataReader, "vin_code", "");
-                    tmpPickCarInfo.vpn = getTrimString(sqlDataReader, "car_no", "");
-                    tmpPickCarInfo.orderCode = getTrimString(sqlDataReader, "gd_sn", "");
-                    tmpPickCarInfo.repairTime = getTrimString(sqlDataReader, "in_dt", "").Replace("/","-");
-                    tmpPickCarInfo.repairMileage = getTrimString(sqlDataReader, "miles", "");
-                    tmpPickCarInfo.serviceType = getTrimString(sqlDataReader, "gd_nm", "");
-                    tmpPickCarInfo.fuelType = getOilType(getTrimString(sqlDataReader, "car_oil", ""));
-                    tmpPickCarInfo.faultDesc = getTrimString(sqlDataReader, "error_desp", ""); 
-                    //结算信息
-                    tmpSettleInfo.payTime = getTrimString(sqlDataReader, "settle_dt", "").Replace("/", "-");
-                    tmpSettleInfo.orderCode = getTrimString(sqlDataReader, "gd_sn", "");
-                }
-
-                sqlDataReader.Close();
-
-                gd_sn = "";
-                sql = String.Format("select A.GD_ID, E.GD_SN, A.PRJ_NM as projectName,  A.man_hour as workingHours, c.PART_NM as partName, D.ORIGINAL_FACTORY_ID as partCode,  C.QTY as partQty, D.unit as unit from DT_OM_BXXM A join DT_EM_CKD  B ON A.GD_ID =B.RELATIVE_ID left JOIN DT_EM_CKLJ C ON B.OUTPUT_ID=C.OUTPUT_ID AND A.baoxiu_id=c.output_part_id LEFT JOIN DT_EM_LJML D ON C.PART_ID=D.PART_ID join dt_om_gd e on a.gd_id=e.gd_id JOIN MT_CL f on e.cl_id=f.cl_id where E.settle_dt>='{0} 00:00:00' and E.settle_dt<='{0} 23:59:59'  ", date_str);
-                if (gd_sn.Length > 0)
-                {
-                    sql += string.Format(" and A.gd_sn like '%{0}%'", gd_sn);
-                }
-
-                if (car_no.Length > 0)
-                {
-                    sql += string.Format(" and F.Car_No like '%{0}%'", car_no);
-                }
-                sqlcmd.CommandText = sql;
-                sqlDataReader = sqlcmd.ExecuteReader();
-                var repairProjects = new Dictionary<String, Dictionary<RepairProject, List<RepairItem>>>();
-
-                while (sqlDataReader.Read())
-                {
-                    gd_sn = getTrimString(sqlDataReader, "gd_sn", "");
-
-                    Dictionary<RepairProject, List<RepairItem>> projects;
-                    repairProjects.TryGetValue(gd_sn, out projects);
-                    if (projects == null)
-                    {
-                        projects = new Dictionary<RepairProject, List<RepairItem>>();
-                        repairProjects[gd_sn] = projects;
-                    }
-
-                    RepairProject repairProject = new RepairProject();
-
-                    repairProject.projectName = getTrimString(sqlDataReader, "projectName", "");
-                    repairProject.workingHours = getTrimString(sqlDataReader, "workingHours", "0");
-
-                    List<RepairItem> repairItems;
-                    projects.TryGetValue(repairProject, out repairItems);
-                    if (repairItems == null)
-                    {
-                        repairItems = new List<RepairItem>();
-                        projects[repairProject] = repairItems;
-                    }
-
-
-                    if (!sqlDataReader.IsDBNull(sqlDataReader.GetOrdinal("partName")))
-                    {
-                        var repairItem = new RepairItem();
-                        repairItem.partName = getTrimString(sqlDataReader, "partName", "");
-                        repairItem.partCode = getTrimString(sqlDataReader, "partCode", "");
-                        repairItem.partQty = getTrimString(sqlDataReader, "partQty", "");
-                        repairItem.unit = getTrimString(sqlDataReader, "unit", "");
-                        repairItems.Add(repairItem);
-                    }
-                }
-
-                foreach (var item in repairProjects)
-                {
-                    RepairItemInfo repairItemInfo = new RepairItemInfo();
-                    repairItemInfo.orderCode = item.Key;
+                    byte[] gp_pic_byte = (byte[])sqlDataReader["GD_PIC"];
                     
-                    foreach (var item1 in item.Value)
-                    {
-                        repairItemInfo.repairProjectList.Add(item1.Key);
-                        if (item1.Value!=null && item1.Value.Count>0 ) { 
-                            repairItemInfo.repairProjectList[repairItemInfo.repairProjectList.Count - 1].repairPartList = item1.Value;
+               
+
+                        if (gp_pic_byte.Length >10)
+                        {
+                        Image image;
+                        if (gp_pic_byte != null)
+                        {
+                            MemoryStream mymemorystream = new MemoryStream(gp_pic_byte);
+                            image = Image.FromStream(mymemorystream, true);
+                            mymemorystream.Close();
+                            tmpCarDisplayInfo.gp_pic = image;
+                            tmpCarDisplayInfo.gp_pic_bytes = gp_pic_byte;
                         }
+
                     }
-                    repairItemInfos[item.Key] = repairItemInfo;
+
+                    tmpRepairInfo.companyIdentity = GlobalData.companyIdentity;
+                    tmpRepairInfo.incomingInspectionId = getTrimString(sqlDataReader, "incomingInspectionId", "");
+                    tmpRepairInfo.repairOrderSeq = getTrimString(sqlDataReader, "GD_SN", "");
+                    tmpRepairInfo.deliveryDate = getTrimString(sqlDataReader, "deliveryDate", "");
+                    tmpRepairInfo.repairMileage = getTrimString(sqlDataReader, "repairMileage", "0");
+                    tmpRepairInfo.settlementDate = getTrimString(sqlDataReader, "settlementDate", "");
+                    tmpRepairInfo.settlementSeq = getTrimString(sqlDataReader, "settlementSeq", "");
+
                 }
             }
             catch (Exception ex)
@@ -522,7 +440,6 @@ namespace HandyUploadForm
                 dbCon.Close();
             }
         }
-        
 
 
        
@@ -543,7 +460,7 @@ namespace HandyUploadForm
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int count = 0, selectIndex = -1;
+            int count = 0, selectIndex = -1 ;
             for (int i = 0; i < dataGridView1.Rows.Count; i++)
             {
                 DataGridViewCheckBoxCell checkCell = (DataGridViewCheckBoxCell)dataGridView1.Rows[i].Cells["Column1"];
@@ -568,120 +485,69 @@ namespace HandyUploadForm
             }
 
 
-
+           
             LogHelper.WriteLog(typeof(Form1), "begin request access token from server");
 
-            string gd_sn = dataGridView1.Rows[selectIndex].Cells[1].Value.ToString();
+            string gd_id = dataGridView1.Rows[selectIndex].Cells[7].Value.ToString();
 
-            PickCarInfo tmpPickCarInfo;
-            pickCarInfo.TryGetValue(gd_sn, out tmpPickCarInfo);
+            CarDisplayInfo tmpCarDisplayInfo;
+            this.carDisplayInfo.TryGetValue(gd_id, out tmpCarDisplayInfo);
 
-            if (tmpPickCarInfo != null)
+            CardUploadInfo tmpCarUploadInfo;
+            carUploadInfo.TryGetValue(gd_id, out tmpCarUploadInfo);
+
+            if (tmpCarDisplayInfo.gp_pic_bytes == null)
             {
-                string json = JsonConvert.SerializeObject(tmpPickCarInfo, Formatting.None, setting);
-                string sign = SignUtil.sign("pick", json, GlobalData.secret);
-                tmpPickCarInfo.sign = sign;
-                json = JsonConvert.SerializeObject(tmpPickCarInfo);
-
-                String url = configItem.serverHost + URL.PICKUP_CAR_URL;
-                //  MessageBox.Show(json);
-                string debuginfo = this.textBox3.Text + "接车地址:" + url + "\r\n";
-                Console.WriteLine(json);
-                debuginfo += "请求数据:" + json + "\r\n";
-                var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
-                string response = restApiClient.MakeRequest();
-                debuginfo += "响应:" + response + "\r\n\r\n";
-                this.textBox3.Text = debuginfo;
-                
+                MessageBox.Show("上传图片不能为空", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            RepairItemInfo tmpRepairItemInfo;
-            repairItemInfos.TryGetValue(gd_sn, out tmpRepairItemInfo);
-            if (tmpRepairItemInfo != null)
+            ValidatorRet validdatorRet = CarUploadFieldValidator.check(tmpCarUploadInfo);
+            if (!validdatorRet.checkResult)
             {
-                string json = JsonConvert.SerializeObject(tmpRepairItemInfo, Formatting.None, setting);
-
-                string sign = SignUtil.sign("settleinfo", json, GlobalData.secret);
-                tmpRepairItemInfo.sign = sign;
-                json = JsonConvert.SerializeObject(tmpRepairItemInfo, Formatting.None, setting);
-                String url = configItem.serverHost + URL.REPAIR_INFO_URL;
-                //  MessageBox.Show(json);
-                string debuginfo = this.textBox3.Text + "配件地址:" + url + "\r\n";
-                Console.WriteLine(json);
-                debuginfo += "请求数据:" + json + "\r\n";
-                //    json = "{\"appId\":\"c737a6a7-8efa-46e6-9439-659dff1f3ef3\",\"sign\":\"04d4b81b916340b002a21ae961ed6886\",\"nonce\":\"753359534\",\"timestamp\":\"1627794303248\",\"orderCode\":\"R20210124001\",\"repairProjectList\":[{\"projectName\":\"二级维护*1\",\"projectType\":\"\",\"workingHours\":\"120.00\",\"repairPartList\":[{\"partName\":\"机油\",\"brandName\":\"\",\"partType\":\"\",\"partCode\":\"QPJY-AM-01C\",\"partQty\":\"1.00\",\"unit\":\"\"}]},{\"projectName\":\"更换起动机整流子*1\",\"projectType\":\"\",\"workingHours\":\"10.00\", \"repairPartList\":[]}]}";
-                var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
-                string response = restApiClient.MakeRequest();
-                debuginfo += "响应:" + response + "\r\n\r\n";
-                this.textBox3.Text = this.textBox3.Text + debuginfo;
+                MessageBox.Show("车辆信息上传，错误信息【" + validdatorRet.error_msg + "】", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
 
-            SettleInfo tmpSettleInfo;
-            settleInfo.TryGetValue(gd_sn, out tmpSettleInfo);
-            if (tmpSettleInfo != null)
-            {
-                string json =  JsonConvert.SerializeObject(tmpSettleInfo, Formatting.None, setting);
+            RepairInfoInternal tmpRepairInfoInternal;
+            repairInfo.TryGetValue(gd_id, out tmpRepairInfoInternal);
+            RepairItem tmpRepairItem;
+            RepairPart tmpRepairPart;
+            repairItems.TryGetValue(gd_id, out tmpRepairItem);
+            repairParts.TryGetValue(gd_id, out tmpRepairPart);
+            tmpRepairInfoInternal.repairItems = tmpRepairItem;
+            tmpRepairInfoInternal.repairParts = tmpRepairPart;
 
-                string sign = SignUtil.sign("settle", json, GlobalData.secret);
-                tmpSettleInfo.sign = sign;
-                json = JsonConvert.SerializeObject(tmpSettleInfo, Formatting.None, setting);
-                String url = configItem.serverHost + URL.SETTLE_INFO_URL;
-                //  MessageBox.Show(json);
-                string debuginfo = this.textBox3.Text + "结算地址:" + url + "\r\n";
-                Console.WriteLine(json);
-                debuginfo += "请求数据:" + json + "\r\n";
-                //    json = "{\"appId\":\"c737a6a7-8efa-46e6-9439-659dff1f3ef3\",\"sign\":\"04d4b81b916340b002a21ae961ed6886\",\"nonce\":\"753359534\",\"timestamp\":\"1627794303248\",\"orderCode\":\"R20210124001\",\"repairProjectList\":[{\"projectName\":\"二级维护*1\",\"projectType\":\"\",\"workingHours\":\"120.00\",\"repairPartList\":[{\"partName\":\"机油\",\"brandName\":\"\",\"partType\":\"\",\"partCode\":\"QPJY-AM-01C\",\"partQty\":\"1.00\",\"unit\":\"\"}]},{\"projectName\":\"更换起动机整流子*1\",\"projectType\":\"\",\"workingHours\":\"10.00\", \"repairPartList\":[]}]}";
-                var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
-                string response = restApiClient.MakeRequest();
-                debuginfo += "响应:" + response + "\r\n\r\n";
-                this.textBox3.Text = this.textBox3.Text + debuginfo;
+            validdatorRet = RepairInfoValidator.check(tmpRepairInfoInternal);
+            if (!validdatorRet.checkResult)
+            {
+                MessageBox.Show("维修记录上传，错误信息【" + validdatorRet.error_msg + "】", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            SignInfo signInfo = SignUtils.sign();
+
+            tmpCarUploadInfo.sign = signInfo.sign;
+            tmpCarUploadInfo.timestamp = signInfo.timestamp;
+            tmpCarUploadInfo.nonce = signInfo.nonce;
+            tmpCarUploadInfo.companyIdentity = GlobalData.companyIdentity;
+
+
+
+            this.Cursor = Cursors.WaitCursor;
+            String imageUrl = getImageUrl(signInfo, tmpCarDisplayInfo.gp_pic_bytes);
+
+            if (!imageUrl.StartsWith("http")) 
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show("无法获取上传图片url, 消息【" + imageUrl + "】");
+                return;
             }
 
 
+            tmpCarUploadInfo.companyIdentity = GlobalData.companyIdentity;
+            tmpCarUploadInfo.drivingLicenseImg = imageUrl;
 
-            //CarDisplayInfo tmpCarDisplayInfo;
-            //this.carDisplayInfo.TryGetValue(gd_sn, out tmpCarDisplayInfo);
-
-            //CardUploadInfo tmpCarUploadInfo;
-            //carUploadInfo.TryGetValue(gd_id, out tmpCarUploadInfo);
-
-            //if (tmpCarDisplayInfo.gp_pic_bytes == null)
-            //{
-            //    MessageBox.Show("上传图片不能为空", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return;
-            //}
-
-            //ValidatorRet validdatorRet = CarUploadFieldValidator.check(tmpCarUploadInfo);
-            //if (!validdatorRet.checkResult)
-            //{
-            //    MessageBox.Show("车辆信息上传，错误信息【" + validdatorRet.error_msg + "】", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return;
-            //}
-
-            //RepairInfoInternal tmpRepairInfoInternal;
-            //repairInfo.TryGetValue(gd_id, out tmpRepairInfoInternal);
-            //RepairItem tmpRepairItem;
-            //RepairPart tmpRepairPart;
-            //repairItems.TryGetValue(gd_id, out tmpRepairItem);
-            //repairParts.TryGetValue(gd_id, out tmpRepairPart);
-            //tmpRepairInfoInternal.repairItems = tmpRepairItem;
-            //tmpRepairInfoInternal.repairParts = tmpRepairPart;
-
-            //validdatorRet = RepairInfoValidator.check(tmpRepairInfoInternal);
-            //if (!validdatorRet.checkResult)
-            //{
-            //    MessageBox.Show("维修记录上传，错误信息【" + validdatorRet.error_msg + "】", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //    return;
-            //}
-
-            //SignInfo signInfo = SignUtils.sign();
-
-<<<<<<< HEAD
-            //tmpCarUploadInfo.sign = signInfo.sign;
-            //tmpCarUploadInfo.timestamp = signInfo.timestamp;
-            //tmpCarUploadInfo.nonce = signInfo.nonce;
-            //tmpCarUploadInfo.companyIdentity = GlobalData.appid;
-=======
             
             String url = configItem.serverHost+"/repair/car/upload";
             string json = JsonConvert.SerializeObject(tmpCarUploadInfo);
@@ -699,21 +565,15 @@ namespace HandyUploadForm
                 MessageBox.Show(response);
                 return;
             }
->>>>>>> 0244969a396bca3271f7ddecd4b138135cbb43f9
+
+            tmpRepairInfoInternal.companyIdentity = GlobalData.companyIdentity;
+            tmpRepairInfoInternal.nonce = signInfo.nonce;
+            tmpRepairInfoInternal.sign = signInfo.sign;
+            tmpRepairInfoInternal.timestamp = signInfo.timestamp;
+
+            RepairInfo repairInfo1 = RepairInfo.fromRepairInfoInternal(tmpRepairInfoInternal);
 
 
-
-            //this.Cursor = Cursors.WaitCursor;
-            //String imageUrl = getImageUrl(signInfo, tmpCarDisplayInfo.gp_pic_bytes);
-
-<<<<<<< HEAD
-            //if (!imageUrl.StartsWith("http"))
-            //{
-            //    this.Cursor = Cursors.Default;
-            //    MessageBox.Show("无法获取上传图片url, 消息【" + imageUrl + "】");
-            //    return;
-            //}
-=======
             json = JsonConvert.SerializeObject(repairInfo1);
             Console.WriteLine(json);
         //    MessageBox.Show(json);
@@ -740,124 +600,34 @@ namespace HandyUploadForm
                     MessageBox.Show(response);
                 }
             }
->>>>>>> 0244969a396bca3271f7ddecd4b138135cbb43f9
 
-
-            //tmpCarUploadInfo.companyIdentity = GlobalData.appid;
-            //tmpCarUploadInfo.drivingLicenseImg = imageUrl;
-
-
-            //String url = configItem.serverHost + "/repair/car/upload";
-            //string json = JsonConvert.SerializeObject(tmpCarUploadInfo);
-            ////  MessageBox.Show(json);
-            //string debuginfo = this.textBox3.Text + "车辆上传信息地址:" + url + "\r\n";
-            //Console.WriteLine(json);
-            //debuginfo += "请求数据:" + json + "\r\n";
-            //var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
-            //string response = restApiClient.MakeRequest();
-            //debuginfo += "响应:" + response + "\r\n\r\n";
-            //this.textBox3.Text = debuginfo;
-            //if (response != null && response.IndexOf("检验单对应的车辆档案已上传") == 0)
-            //{
-            //    this.Cursor = Cursors.Default;
-            //    MessageBox.Show(response);
-            //    return;
-            //}
-
-            //tmpRepairInfoInternal.companyIdentity = GlobalData.appid;
-            //tmpRepairInfoInternal.nonce = signInfo.nonce;
-            //tmpRepairInfoInternal.sign = signInfo.sign;
-            //tmpRepairInfoInternal.timestamp = signInfo.timestamp;
-
-            //RepairInfo repairInfo1 = RepairInfo.fromRepairInfoInternal(tmpRepairInfoInternal);
-
-
-            //json = JsonConvert.SerializeObject(repairInfo1);
-            //Console.WriteLine(json);
-            ////    MessageBox.Show(json);
-            ////System.IO.File.WriteAllText(@"json.txt", json, Encoding.UTF8);
-            //String url2 = configItem.serverHost + "/repair/order/upload";
-            //debuginfo += "上传工单地址:" + url2 + "\r\n";
-            //debuginfo += "请求数据:" + json + "\r\n";
-            //restApiClient = new RestApiClient(url2, HttpVerbNew.POST, ContentType.JSON, json);
-
-            //response = restApiClient.MakeRequest();
-            //debuginfo += "响应:" + response + "\r\n\r\n";
-            //this.textBox3.Text = debuginfo;
-            //if (response != null)
-            //{
-            //    CommonResponse resp = (CommonResponse)JsonConvert.DeserializeObject(response, typeof(CommonResponse));
-            //    if (resp.code == 0)
-            //    {
-            //        MessageBox.Show("上传成功");
-            //        updateUploadStatus(gd_id);
-            //        reloadUploadStatus();
-            //    }
-            //    else
-            //    {
-            //        MessageBox.Show(response);
-            //    }
-            //}
-
-            //this.Cursor = Cursors.Default;
+            this.Cursor = Cursors.Default;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string json = "{\"serviceType\":\"常规保养\",\"natureOfUse\":1,\"sign\":\"\",\"drivingPermitPhoto\":\"\",\"repairMileage\":\"10\",\"requirement\":\"需要检测\",\"faultDesc\":\"发动机故障\",\"carPhoto\":\"\",\"fuelType\":\"A\",\"repairTime\":\"2021-06-25 12:12:12\",\"vpn\":\"GK12001\",\"appId\":\"9a8d95397acb40838684d4dea4f939bd\",\"orderCode\":\"1\",\"vin\":\"WVWLJ57N4FV028811\",\"timestamp\":\"1624872739229\"}";
-            string secrect = "a312e493574846f1b65136bf2931024f";
-            string sign = SignUtil.sign("pick", json, secrect);
-            //TestUtil.print(json);
-            MessageBox.Show(sign);
-            //this.Close();
+            this.Close();
         }
+
+        Dictionary<String, CardUploadInfo> carUploadInfo;
+        Dictionary<String, CarDisplayInfo> carDisplayInfo;
+        Dictionary<String, RepairInfoInternal> repairInfo;
+
+        Dictionary<String, RepairItem> repairItems;
+        Dictionary<String, RepairPart> repairParts;
 
         public void reloadUploadStatus()
         {
             //  this.listView1.Items.Clear();
             //得到日期
 
-            //            select t1.gd_sn,
-            //    t2.vin_code,
-            //    t2.car_no,
-            //    t1.in_dt,
-            //    t3.miles,
-            //    t4.gd_nm,
-            //    t2.car_oil,
-            //    t3.error_desp
-            //  from dt_om_gd t1
-            //left join mt_cl t2
-            //on t1.cl_id = t2.cl_id
-            //left join DT_OM_JJJC t3
-            //on t1.gd_id = t3.gd_id
-            //left join mt_gdfl t4
-            //on t1.gd_type_id = t4.id
-            // where t1.settle_dt > '2021-01-24'
-
-            //            select d.gd_id, 
-            // e.PRJ_NM as projectName, 
-            //e.man_hour as workingHours,
-            //A.PART_NM as partName,
-            //C.ORIGINAL_FACTORY_ID as partCode, 
-            //A.QTY as partQty,
-            //C.unit as unit
-            //from DT_EM_CKLJ A
-            //JOIN DT_EM_CKD B ON A.OUTPUT_ID = B.OUTPUT_ID
-            //join DT_EM_LJML C on A.PART_ID = C.PART_ID
-            //join DT_OM_GD D ON d.GD_ID = B.RELATIVE_ID
-            //join DT_OM_BXXM E on D.gd_id = E.gd_id
-            //where D.gd_sn = 'R20210124001'
-
-
-
-            //select gd_id, settle_dt from dt_om_gd where gd_sn = 'R20210124001';
-
-
             dataGridView1.Rows.Clear();
-            // string settle_dt = this.dateTimePicker1.Text;
-            string settle_dt = "2021-01-24";
+            String gdSn = textBox1.Text.Trim();
+            String carNo = textBox2.Text.Trim();
 
-            this.getCarInfo(settle_dt, out pickCarInfo, out repairItemInfos, out settleInfo, out carDisplayInfo);
+            string settle_dt = this.dateTimePicker1.Text;
+
+            this.getCarInfo(settle_dt, out carUploadInfo, out carDisplayInfo, out repairInfo);
 
 
             if (carDisplayInfo.Count == 0)
@@ -866,6 +636,9 @@ namespace HandyUploadForm
                 MessageBox.Show("没有查到任何记录", "提示", MessageBoxButtons.OK);
                 return;
             }
+
+            repairItems = getRepairItemDetail(carDisplayInfo);
+            repairParts = getRepairPartsDetail(carDisplayInfo);
 
             this.Cursor = Cursors.WaitCursor;
 
@@ -878,11 +651,12 @@ namespace HandyUploadForm
                     this.dataGridView1.Rows[index].DefaultCellStyle.BackColor = Color.FromArgb(186, 201, 236);
                 }
                 this.dataGridView1.Rows[index].Cells[1].Value = item.gd_sn;
-                this.dataGridView1.Rows[index].Cells[2].Value = item.car_no;
-                this.dataGridView1.Rows[index].Cells[3].Value = item.customer_name;
-                this.dataGridView1.Rows[index].Cells[4].Value = item.vin_code;
-                this.dataGridView1.Rows[index].Cells[5].Value = item.error_desc;
-
+                this.dataGridView1.Rows[index].Cells[2].Value = item.incomingInspectionId;
+                this.dataGridView1.Rows[index].Cells[3].Value = item.car_no;
+                this.dataGridView1.Rows[index].Cells[4].Value = item.customer_name;
+                this.dataGridView1.Rows[index].Cells[5].Value = item.vin_code;
+                this.dataGridView1.Rows[index].Cells[6].Value = item.error_desc;
+                this.dataGridView1.Rows[index].Cells[7].Value = item.gd_id;
             }
             dataGridView1.ClearSelection();
 
@@ -891,6 +665,13 @@ namespace HandyUploadForm
 
         private void button3_Click(object sender, EventArgs e)
         {
+            if (textBox1.Text.Trim().Length==0 && textBox2.Text.Trim().Length == 0)
+            {
+                MessageBox.Show("工单号或者车牌号不能同时为空", "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                textBox1.Focus();
+                return;
+            }
+
             reloadUploadStatus();
         }
 
@@ -923,9 +704,6 @@ namespace HandyUploadForm
             MessageBox.Show(aa);
         }
 
-<<<<<<< HEAD
-     
-=======
         public static byte[] ImgToByt(Image img)
         {
             MemoryStream ms = new MemoryStream();
@@ -984,7 +762,6 @@ namespace HandyUploadForm
             }
             return "";
         }
->>>>>>> 0244969a396bca3271f7ddecd4b138135cbb43f9
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -1057,8 +834,8 @@ namespace HandyUploadForm
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            this.getAppId();
-            if (StringUtil.isEmpty(GlobalData.appid))
+            this.getCompanyIdentity();
+            if (StringUtil.isEmpty(GlobalData.companyIdentity))
             {
                 MessageBox.Show("请检查数据库是否配置了企业身份【companyIdentity】或者密钥【secretKey】","错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 this.Close();

@@ -120,6 +120,37 @@ namespace AutoUploadService
     }
 
 
+    public class UpdateRepairInfoByOrderCode:SignInfo
+    {
+        public String orderCode { get; set; }
+        public String vin { get; set; }
+        public String vpn { get; set; }
+        public String repairTime { get; set; }
+        public String payTime { get; set; }
+        public List<RepairProject> repairProjectList { get; set; }
+
+
+        public UpdateRepairInfoByOrderCode(PickCarInfo pickCarInfo, RepairItemInfo repairItemInfo, SettleInfo settleInfo)
+        {
+            if (pickCarInfo != null)
+            {
+                orderCode = pickCarInfo.orderCode;
+                vin = pickCarInfo.vin;
+                vpn = pickCarInfo.vpn;
+                repairTime = pickCarInfo.repairTime;                
+            }
+            if (settleInfo != null)
+            {
+                payTime = settleInfo.payTime;
+            }
+            if (repairItemInfo != null)
+            {
+                repairProjectList = repairItemInfo.repairProjectList;
+            }
+        }
+    }
+
+
     //上传维修信息
     public class RepairItemDetail : SignInfo
     {
@@ -386,7 +417,46 @@ namespace AutoUploadService
                 //sqlcmd.ExecuteNonQuery();
                 if (!isTriggerExists("trigger_dt_om_gd_Update"))
                 {
-                    updateSql = "create trigger trigger_dt_om_gd_Update  on dt_om_gd after update as declare @gd_id int; declare @cl_id int; declare @gd_sn nchar(32); declare @vin_code nchar(17); declare @is_settle_deleted int; declare @is_settle_inserted int; declare @is_finish_deleted int; declare @is_finish_inserted int; declare @cnt int; declare @finish_dt datetime; declare @settle_dt datetime; begin select @cl_id=cl_id, @gd_id=gd_id, @gd_sn=gd_sn, @is_settle_deleted=is_settle, @is_finish_deleted=finish, @finish_dt=finish_dt, @settle_dt=settle_dt from deleted; select @cl_id=cl_id, @gd_id=gd_id, @gd_sn=gd_sn, @is_settle_inserted=is_settle, @is_finish_inserted=finish, @finish_dt=finish_dt, @settle_dt=settle_dt from inserted; select @vin_code=ltrim(rtrim(vin_code)) from mt_cl where cl_id=@cl_id; if (len(@vin_code)=17) begin if (@is_finish_deleted=0 and @is_finish_inserted=1) begin select @cnt=count(gd_id) from dataupload_gd where gd_id=@gd_id and upload_type in ('repairinfo'); if (@cnt=0) begin insert into dataupload_gd(gd_id, gd_sn, cl_id, upload_type, is_uploaded, create_time) values(@gd_id, @gd_sn, @cl_id, 'repairinfo', 0, getdate()); end end if (@is_settle_deleted=0 and @is_settle_inserted=1) begin select @cnt=count(gd_id) from dataupload_gd where gd_id=@gd_id and upload_type in ('settle'); if (@cnt=0) begin insert into dataupload_gd(gd_id, gd_sn, cl_id, upload_type, is_uploaded, create_time) values(@gd_id, @gd_sn, @cl_id, 'settle', 0, getdate()); end end end end";
+                    updateSql = @"create trigger trigger_dt_om_gd_Update  on dt_om_gd 
+                                    after update as 
+                                    declare @gd_id int; 
+                                    declare @cl_id int; 
+                                    declare @gd_sn nchar(32); 
+                                    declare @vin_code nchar(17); 
+                                    declare @is_settle_deleted int; 
+                                    declare @is_settle_inserted int; 
+                                    declare @is_finish_deleted int; 
+                                    declare @is_finish_inserted int; 
+                                    declare @cnt int; 
+                                    declare @finish_dt datetime; 
+                                    declare @settle_dt datetime; 
+                                    begin 
+                                        select @cl_id=cl_id, @gd_id=gd_id, @gd_sn=gd_sn, @is_settle_deleted=is_settle, @is_finish_deleted=finish, @finish_dt=finish_dt, @settle_dt=settle_dt from deleted; 
+                                        select @cl_id=cl_id, @gd_id=gd_id, @gd_sn=gd_sn, @is_settle_inserted=is_settle, @is_finish_inserted=finish, @finish_dt=finish_dt, @settle_dt=settle_dt from inserted; 
+                                        select @vin_code=ltrim(rtrim(vin_code)) from mt_cl where cl_id=@cl_id; if (len(@vin_code)=17) 
+                                        begin 
+                                            if (@is_finish_deleted=0 and @is_finish_inserted=1) 
+                                                begin 
+                                                    select @cnt=count(gd_id) from dataupload_gd where gd_id=@gd_id and upload_type in ('repairinfo'); 
+                                                    if (@cnt=0) 
+                                                        begin 
+                                                            insert into dataupload_gd(gd_id, gd_sn, cl_id, upload_type, is_uploaded, create_time) values(@gd_id, @gd_sn, @cl_id, 'repairinfo', 0, getdate()); 
+                                                        end 
+                                                end 
+                                                    if (@is_settle_deleted=0 and @is_settle_inserted=1) 
+                                                        begin 
+                                                            select @cnt=count(gd_id) from dataupload_gd where gd_id=@gd_id and upload_type in ('settle'); 
+                                                            if (@cnt=0) 
+                                                                begin 
+                                                                    insert into dataupload_gd(gd_id, gd_sn, cl_id, upload_type, is_uploaded, create_time) values(@gd_id, @gd_sn, @cl_id, 'settle', 0, getdate()); 
+                                                                end 
+                                                            else
+                                                                begin
+                                                                    insert into dataupload_gd(gd_id, gd_sn, cl_id, upload_type, is_uploaded, create_time) values(@gd_id, @gd_sn, @cl_id, 'updateRepairInfoByOrderCode', 0, getdate()); 
+                                                                end
+                                                        end 
+                                       end 
+                                    end";
                     sqlcmd.CommandText = updateSql;
                     sqlcmd.ExecuteNonQuery();
                 }
@@ -474,6 +544,7 @@ namespace AutoUploadService
         public static string PICK = "pick";
         public static string REPAIRINFO = "repairinfo";
         public static string SETTLE = "settle";
+        public static string UPDATE_REPAIRINFO_BY_ORDERCODE = "updateRepairInfoByOrderCode";
 
         public class UploadItem
         {
@@ -505,7 +576,7 @@ namespace AutoUploadService
                 {
                     // string date_str = DateTime.Now.ToString("yyyy-MM-dd");
                     //string sql = String.Format("select * from dataupload_gd where is_uploaded=0 and create_time>='{0} 00:00:00'", date_str);
-                    string sql = String.Format("select * from dataupload_gd where (is_uploaded=0 and upload_type='pick') or (upload_type in ('settle','repairinfo') and is_uploaded=0 and gd_id in (select gd_id from dataupload_gd where is_uploaded=1 and upload_type='pick'))");
+                    string sql = String.Format("select * from dataupload_gd where (is_uploaded=0 and upload_type='pick') or (upload_type in ('settle','repairinfo','updateRepairInfoByOrderCode') and is_uploaded=0 and gd_id in (select gd_id from dataupload_gd where is_uploaded=1 and upload_type='pick')) order by id asc");
                     //Console.WriteLine("sql:" + sql);
                     cmd.CommandText = sql;
                     using (SqlDataReader reader = cmd.ExecuteReader())
@@ -870,6 +941,27 @@ namespace AutoUploadService
             }
         }
 
+        //更新错误信息上传接口
+        private void uploadUpdateRepairInfoByOrderCodes(Dictionary<string, UpdateRepairInfoByOrderCode> updateRepairInfoByOrderCode)
+        {
+            foreach (var item in updateRepairInfoByOrderCode)
+            {
+                JsonSerializerSettings setting = new JsonSerializerSettings();
+                setting.NullValueHandling = NullValueHandling.Ignore;
+                string json = JsonConvert.SerializeObject(item.Value, Formatting.None, setting);
+                json = json.Replace('%', '％');
+                LogHelper.WriteLog(typeof(DataUpload), string.Format("before encrption, updateRepairInfoByOrderCode request req:{0}", json));
+                json = SignUtil.sign(UPDATE_REPAIRINFO_BY_ORDERCODE, json, ConfigItem.secret);
+                String url = configItem.serverHost + URL.REPAIR_INFO_URL;
+                LogHelper.WriteLog(typeof(DataUpload), string.Format("updateRepairInfoByOrderCode request url:{0}, req:", url, json));
+                var restApiClient = new RestApiClient(url, HttpVerbNew.POST, ContentType.JSON, json);
+                string response = restApiClient.MakeRequest();
+
+                LogHelper.WriteLog(typeof(DataUpload), "settle response:" + response);
+                updateUploadGdStatus(item.Value.orderCode, SETTLE, json, response);
+            }
+        }
+
         private void uploadSettleInfo(List<String> gdIds)
         {
             Dictionary<String, RepairItemInfo> repairItemInfos;
@@ -884,7 +976,24 @@ namespace AutoUploadService
             Dictionary<string, SettleInfo> settleInfos;
             getRepairItemAndSettleInfo(gdIds, out repairItemInfos, out settleInfos);
             uploadRepairItemInfos(repairItemInfos);
+        }
 
+        private void uploadUpdateRepairInfoByOrderCode(List<String> gdIds)
+        {
+            Dictionary<string, PickCarInfo> pickCarInfo;
+            getPickCarInfos(gdIds, out pickCarInfo);
+
+            Dictionary<String, RepairItemInfo> repairItemInfos;
+            Dictionary<string, SettleInfo> settleInfos;
+            getRepairItemAndSettleInfo(gdIds, out repairItemInfos, out settleInfos);
+            Dictionary<String, UpdateRepairInfoByOrderCode> updateRepairINfoByOrderCodes = new Dictionary<string, UpdateRepairInfoByOrderCode>();
+
+            foreach (var gdId in gdIds)
+            {
+                UpdateRepairInfoByOrderCode updateRepairINfoByOrderCode = new UpdateRepairInfoByOrderCode(pickCarInfo[gdId], repairItemInfos[gdId], settleInfos[gdId]);
+                updateRepairINfoByOrderCodes[gdId] = updateRepairINfoByOrderCode;
+            }
+            uploadUpdateRepairInfoByOrderCodes(updateRepairINfoByOrderCodes);
         }
 
         private void getCompanyInfo()
@@ -1055,12 +1164,15 @@ namespace AutoUploadService
                     List<string> pickGdIds = getUploadedItems(uploadItemList, PICK);
                     List<string> repairGdIds = getUploadedItems(uploadItemList, REPAIRINFO);
                     List<string> settleGdIds = getUploadedItems(uploadItemList, SETTLE);
+                    List<string> updateRepairInfoGdIds = getUploadedItems(uploadItemList, UPDATE_REPAIRINFO_BY_ORDERCODE); 
 
                     uploadPickCarInfos(pickGdIds);
                     Thread.Sleep(10 * 1000);
                     uploadRepairItem(repairGdIds);
                     Thread.Sleep(10 * 1000);
                     uploadSettleInfo(settleGdIds);
+                    Thread.Sleep(10 * 1000);
+                    uploadUpdateRepairInfoByOrderCode(updateRepairInfoGdIds);
                 }
                 catch (System.Exception ex)
                 {

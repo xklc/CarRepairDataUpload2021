@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace AutoUploadService
+{
+    class Version_change
+2021.12.07 
+1. 修改时间同步的问题
+2. 修改了执行超时时间的问题
+3. 修改了newtonsoft.json依赖3.5 .netframework版本的问题
+4. 修改了服务不能自动启动的功能（bat文件）
+5. 修改了服务依赖的问题
+    {
+    }
+}

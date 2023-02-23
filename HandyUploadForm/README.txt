@@ -1,0 +1,2 @@
+﻿  insert into [StringParameter](name, value) values('appid','c737a6a7-8efa-46e6-9439-659dff1f3ef3');
+  insert into [StringParameter](name, value) values('secret','7eca473a-4243-4a5a-9262-38d3421ba78f');

@@ -1,0 +1,50 @@
+  byte[] user_photo;
+ 
+            var ms = new System.IO.MemoryStream(user_photo);
+            var bmp = new Bitmap(ms);
+            ms.Dispose();
+            pictureBox1.Image = bmp;
+            
+            //创建命令对象，con参数是一个连接对象
+//创建命令对象，con参数是一个连接对象
+SqlCommand com = new SqlCommand(sql,con);
+con.Open();
+SqlDataReader dr = com.ExecuteReader();
+if (dr.Read())
+{   
+     //声明数组，用于保存数据库的二进制数据
+     byte[] mybyte = null;
+     //读取数据保存到数组中
+     mybyte = (byte[])dr["photo"];     
+     Image image;
+     //读取数组数据成为文件流
+     MemoryStream mymemorystream = new MemoryStream(mybyte);
+     //转换成为图片格式。
+     image = Image.FromStream(mymemorystream, true);
+     this.pictureBox1.Image = image;
+     mymemorystream.Close();  //关闭流
+}
+
+
+http://www.xtaowu.com/api/maintain/upload/image?companyIdentity=913101121322592441T&nonce=804201014&timestamp=1611430615&sign=09d13765daf74b4406bd1a1c772c4242
+
+http://www.xtaowu.com/api/maintain/upload/image?companyIdentity=913101121322592441T&nonce=1589178775&timestamp=1611407123&sign=602b35ae3fd52e27729e66a57116ba31
+
+http://www.xtaowu.com/api/repair/car/upload
+
+{"sign":"602b35ae3fd52e27729e66a57116ba31","nonce":"1589178775","timestamp":"1611407123","companyIdentity":"913101121322592441T","incomingInspectionId":"20201222106036","licensePlate":"沪A099E8","vin":"WAUAYD4LXAD021549","vehicleType":"630","engineNum":"xxxxxxyyyy","vehicleOwner":"伟峰汽修","entrustRepair":"伟峰汽修","contact":"狄云龙","contactDetails":"13566667777","obd":"1","carType":"轻型汽油车","vehicleClassCode":"A","drivingLicenseImg":"http://qiniu.xtaowu.com/dev/mb/ber/202012/62830f82d63a4fac8122afde4a39d730","color":"黑色","brand":"宝骏"}
+
+
+{"sign":"25e86a0eeaf83a7735caaaf9d4a64d1c","nonce":"1893110605","timestamp":"1611415234","companyIdentity":"91310115059353273T","incomingInspectionId":"20201222106036","licensePlate":"沪A099E8","vin":"WAUAYD4LXAD021549","vehicleType":"630","engineNum":"xxxxxxyyyy","vehicleOwner":"伟峰汽修","entrustRepair":"伟峰汽修","contact":"狄云龙","contactDetails":"13566667777","obd":"1","carType":"轻型汽油车","vehicleClassCode":"A","drivingLicenseImg":"http://qiniu.xtaowu.com/dev/mb/ber/202012/62830f82d63a4fac8122afde4a39d730","color":"黑色","brand":"宝骏"}
+
+http://www.xtaowu.com/api/maintain/upload/image?companyIdentity=91310115059353273T&nonce=1893110605&timestamp=1611415234&sign=25e86a0eeaf83a7735caaaf9d4a64d1c
+
+"{\"code\":100,\"message\":\"org.springframework.validation.BeanPropertyBindingResult: 1 errors\\nField error in object 'uploadImageReq' on field 'file': rejected value [null]; codes [NotNull.uploadImageReq.file,NotNull.file,NotNull.org.springframework.web.multipart.MultipartFile,NotNull]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [uploadImageReq.file,file]; arguments []; default message [file]]; default message [图片不能为空]\",\"data\":null}"
+
+
+{"sign":"20e7775ac19a60c677729524c539c75d","nonce":"1791012478","timestamp":"1611464462","companyIdentity":"91310112132259241T","incomingInspectionId":"20201222106057","deliveryDate":"2021-01-24","repairMileage":"66666","settlementDate":"2021-01-24","settlementSeq":"R20210124001","repairItems":{"subtotal":"10","items":[{"itemSeq":"1","itemName":"二级维护*1","settlementTime":"120.00","workHoursUnitPrice":"1.0","workHoursFee":"1.0"},{"itemSeq":"2","itemName":"更换起动机整流子*1","settlementTime":"10.00","workHoursUnitPrice":"1.0","workHoursFee":"1.0"}]},"repairParts":{"subtotal":"1","parts":[{"partSeq":"1","partName":"防冻液","partNo":"KGQLMSAE810","partUnitNumber":"1.00","partMoney":"1.0","oneselfPart":"1.0"},{"partSeq":"2","partName":"机油","partNo":"QPJY-AM-01C","partUnitNumber":"1.00","partMoney":"1.0","oneselfPart":"1.0"}]}}
+{"code":100,"message":"JSON parse error: Cannot deserialize instance of `java.lang.String` out of START_OBJECT token; nested exception is com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot deserialize instance of `java.lang.String` out of START_OBJECT token\n at [Source: (PushbackInputStream); line: 1, column: 296] (through reference chain: com.ctl.maintain.api.model.request.repair.RepairOrderReq[\"repairItems\"])","data":null}
+
+
+{"sign":"abf00f3ba4e9cf2c453a569b22adea39","nonce":"1569637648","timestamp":"1611497826","companyIdentity":"91310112132259241T","incomingInspectionId":"20201222106057","deliveryDate":"2021-01-24","repairMileage":"66666","settlementDate":"2021-01-24","settlementSeq":"R20210124001","repairItems":{"subtotal":"10","items":[{"itemSeq":"1","itemName":"二级维护*1","settlementTime":"120.00","workHoursUnitPrice":"1.0","workHoursFee":"1.0"},{"itemSeq":"2","itemName":"更换起动机整流子*1","settlementTime":"10.00","workHoursUnitPrice":"1.0","workHoursFee":"1.0"}]},"repairParts":{"subtotal":"1","parts":[{"partSeq":"1","partName":"防冻液","partNo":"KGQLMSAE810","partUnitNumber":"1.00","partMoney":"1.0","oneselfPart":"1.0"},{"partSeq":"2","partName":"机油","partNo":"QPJY-AM-01C","partUnitNumber":"1.00","partMoney":"1.0","oneselfPart":"1.0"}]}}
+{"code":100,"message":"JSON parse error: Cannot deserialize instance of `java.lang.String` out of START_OBJECT token; nested exception is com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot deserialize instance of `java.lang.String` out of START_OBJECT token\n at [Source: (PushbackInputStream); line: 1, column: 296] (through reference chain: com.ctl.maintain.api.model.request.repair.RepairOrderReq[\"repairItems\"])","data":null}

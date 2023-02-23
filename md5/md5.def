@@ -1,0 +1,3 @@
+LIBRARY md5
+EXPORTS
+md5 @1

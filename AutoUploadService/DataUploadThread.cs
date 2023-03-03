@@ -347,6 +347,8 @@ namespace AutoUploadService
             {
                 dbCon.Close();
             }
+
+            LogHelper.WriteLog(typeof(DataUpload), string.Format("appid:{0}, secret:{1}", ConfigItem.appId, ConfigItem.secret));
         }
 
         private bool isTriggerExists(string trigger_name)

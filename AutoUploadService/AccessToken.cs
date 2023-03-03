@@ -82,7 +82,7 @@ namespace AutoUploadService
         }
         public string MakeRequest(string parameters)
         {
-            var request = (HttpWebRequest)WebRequest.Create(EndPoint + parameters);
+            var request = (HttpWebRequest)HttpWebRequest.Create(EndPoint + parameters);
             // 添加https
             if (EndPoint.Substring(0, 8) == "https://")
             {

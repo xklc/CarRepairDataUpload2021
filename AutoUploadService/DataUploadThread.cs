@@ -557,6 +557,11 @@ namespace AutoUploadService
             public string upload_type; // pick 接车信息  settle：结算
         }
 
+        public string getTimeString(SqlDataReader sdr, string key, string defaultValue)
+        {
+            int columnId = sdr.GetOrdinal(key);
+            return sdr.GetDateTime(columnId).ToString("yyyy-MM-dd HH:mm:ss");
+        }
         public string getTrimString(SqlDataReader sdr, string key, string defaultValue)
         {
             string value = sdr[key].ToString();
@@ -676,7 +681,7 @@ namespace AutoUploadService
                         tmpPickCarInfo.vin = getTrimString(sqlDataReader, "vin_code", "");
                         tmpPickCarInfo.vpn = getTrimString(sqlDataReader, "car_no", "").Replace("-", "").Replace("－", "");
                         tmpPickCarInfo.orderCode = getTrimString(sqlDataReader, "gd_sn", "");
-                        tmpPickCarInfo.repairTime = getTrimString(sqlDataReader, "in_dt", "").Replace("/", "-");
+                        tmpPickCarInfo.repairTime = getTimeString(sqlDataReader, "in_dt", "");
                         tmpPickCarInfo.repairMileage = getTrimString(sqlDataReader, "miles", "");
                         tmpPickCarInfo.serviceType = getTrimString(sqlDataReader, "gd_nm", "");
                         tmpPickCarInfo.fuelType = getOilType(getTrimString(sqlDataReader, "car_oil", ""));
@@ -836,7 +841,7 @@ namespace AutoUploadService
                             settleInfos[gd_sn] = tmpSettleInfo;
                         }
 
-                        string settle_dt = getTrimString(sqlDataReader, "settle_dt", "").Replace("/", "-");
+                        string settle_dt = getTimeString(sqlDataReader, "settle_dt", "").Replace("/", "-");
                         tmpSettleInfo.orderCode = gd_sn;
                         tmpSettleInfo.payTime = settle_dt;
 

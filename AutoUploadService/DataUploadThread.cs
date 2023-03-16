@@ -312,6 +312,7 @@ namespace AutoUploadService
 
         public void getOpenApi()
         {
+            LogHelper.WriteLog(typeof(DataUpload), string.Format("query appid and security from db"));
             SqlConnection dbCon = getConnection();
             try
             {

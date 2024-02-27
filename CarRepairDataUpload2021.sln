@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Blend for Visual Studio 14
+# Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoUploadService", "AutoUploadService\AutoUploadService.csproj", "{CA298592-AFCD-4218-AD4E-637C0A293A08}"
@@ -12,6 +12,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "md5", "md5\md5.vcxproj", "{074BD729-3800-4381-98DF-E8770ABEE1DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardDiskSerGot", "HardDiskSerGot\HardDiskSerGot.csproj", "{9BB192A6-DA53-4D3E-83A6-1F95ABE10D27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DongHuUpload", "DongHuUpload\DongHuUpload.csproj", "{444A05B8-217A-41C9-ACCF-14E107C1D200}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,18 @@ Global
 		{9BB192A6-DA53-4D3E-83A6-1F95ABE10D27}.Release|x64.Build.0 = Release|Any CPU
 		{9BB192A6-DA53-4D3E-83A6-1F95ABE10D27}.Release|x86.ActiveCfg = Release|Any CPU
 		{9BB192A6-DA53-4D3E-83A6-1F95ABE10D27}.Release|x86.Build.0 = Release|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Debug|x64.Build.0 = Debug|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Debug|x86.Build.0 = Debug|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Release|Any CPU.Build.0 = Release|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Release|x64.ActiveCfg = Release|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Release|x64.Build.0 = Release|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Release|x86.ActiveCfg = Release|Any CPU
+		{444A05B8-217A-41C9-ACCF-14E107C1D200}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

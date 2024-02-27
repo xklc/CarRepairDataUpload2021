@@ -30,8 +30,6 @@ namespace AutoUploadService
             DBName = ConfigurationManager.AppSettings["DBName"];
             serverHost = ConfigurationManager.AppSettings["server_host"];
             cmdTimeOut = Convert.ToInt32(ConfigurationManager.AppSettings["SqlCmdTimeOut"]);
-
-
         }
 
 

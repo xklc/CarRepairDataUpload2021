@@ -266,7 +266,7 @@ namespace DongHuUpload
             }
             if (gd_ids.Count > 0)
             {
-                LogHelper.WriteLog(typeof(DataUploadThread), "upload gd_ids" + formatGdIds());
+                LogHelper.WriteLog(typeof(DataUploadThread), "upload gd_ids:" + formatGdIds());
             }
         }
 
@@ -414,6 +414,7 @@ namespace DongHuUpload
                                 repair_item.in_price_d = Math.Round(in_price_d, 2);
                                 repair_item.total_price = Math.Round(amount_d * in_price_d, 2);
                                 upload_info_list[gd_id].repair_items.Add(repair_item);
+                            //    LogHelper.WriteLog(typeof(DataUploadThread), String.Format("gd_id:{0}, item_name:{1}, amount:{2}, in_price:{3}", gd_id, item_name, repair_item.amount, in_price));
                             }
                         }
                     }
@@ -468,6 +469,14 @@ namespace DongHuUpload
                     uploadItem.count = uploadInfo.repair_items[index].amount_d;
                     uploadItem.amount = uploadInfo.repair_items[index].total_price;
                 }
+
+                if (uploadInfo.repair_projects.Count > uploadInfo.repair_items.Count && index < uploadInfo.repair_items.Count)
+                {
+                    uploadItem.partName = uploadInfo.repair_items[index].item_name;
+                    uploadItem.price = uploadInfo.repair_items[index].in_price_d;
+                    uploadItem.count = uploadInfo.repair_items[index].amount_d;
+                    uploadItem.amount = uploadInfo.repair_items[index].total_price;
+                }
                 uploadInfoDonghu.details.Add(uploadItem);
             }
 
@@ -500,11 +509,11 @@ namespace DongHuUpload
 
             try
             {
-                LogHelper.WriteLog(typeof(DataUploadThread), "upload settle request:" + json);
+                LogHelper.WriteLog(typeof(DataUploadThread), "upload request:" + json);
                 var restApiClient = new RestApiClient(GlobalData.server_url, HttpVerbNew.POST, ContentType.JSON, json);
                 string response = restApiClient.MakeRequest();
 
-                LogHelper.WriteLog(typeof(DataUploadThread), "upload settle response:" + response);
+                LogHelper.WriteLog(typeof(DataUploadThread), "upload response:" + response);
                 updateUploadGdStatus(gd_ids[0].Item1, json, response);
             }
             catch (Exception ex)

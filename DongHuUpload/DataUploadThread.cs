@@ -201,10 +201,11 @@ namespace DongHuUpload
     {
         public String project;
         public String partName;
-        public Double price;
-        public Double count;
-        public Double amount;
-        public Double laborCost;
+        public String price;
+        public String count;
+        public String amount;
+        public String laborCost;
+
     }
 
     public class UploadInfoDonghu
@@ -234,7 +235,7 @@ namespace DongHuUpload
         {
             //指定config文件读取
             System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-            string connectionString =
+            string connectionString = 
                 config.ConnectionStrings.ConnectionStrings[connectionName].ConnectionString.ToString();
             return connectionString;
         }
@@ -461,21 +462,21 @@ namespace DongHuUpload
             {
                 UploadItem uploadItem = new UploadItem();
                 uploadItem.project = uploadInfo.repair_projects[index].project_name;
-                uploadItem.laborCost = uploadInfo.repair_projects[index].amount;
+                uploadItem.laborCost = uploadInfo.repair_projects[index].amount.ToString();
                 if (uploadInfo.repair_projects.Count<= uploadInfo.repair_items.Count)
                 {
                     uploadItem.partName = uploadInfo.repair_items[index].item_name;
-                    uploadItem.price = uploadInfo.repair_items[index].in_price_d;
-                    uploadItem.count = uploadInfo.repair_items[index].amount_d;
-                    uploadItem.amount = uploadInfo.repair_items[index].total_price;
+                    uploadItem.price = uploadInfo.repair_items[index].in_price_d.ToString();
+                    uploadItem.count = uploadInfo.repair_items[index].amount_d.ToString();
+                    uploadItem.amount = uploadInfo.repair_items[index].total_price.ToString();
                 }
 
                 if (uploadInfo.repair_projects.Count > uploadInfo.repair_items.Count && index < uploadInfo.repair_items.Count)
                 {
                     uploadItem.partName = uploadInfo.repair_items[index].item_name;
-                    uploadItem.price = uploadInfo.repair_items[index].in_price_d;
-                    uploadItem.count = uploadInfo.repair_items[index].amount_d;
-                    uploadItem.amount = uploadInfo.repair_items[index].total_price;
+                    uploadItem.price = uploadInfo.repair_items[index].in_price_d.ToString();
+                    uploadItem.count = uploadInfo.repair_items[index].amount_d.ToString();
+                    uploadItem.amount = uploadInfo.repair_items[index].total_price.ToString();
                 }
                 uploadInfoDonghu.details.Add(uploadItem);
             }
@@ -486,12 +487,12 @@ namespace DongHuUpload
                 for (int index= uploadInfo.repair_projects.Count; index< uploadInfo.repair_items.Count; index++)
                 {
                     UploadItem uploadItem = new UploadItem();
-                    uploadItem.project = uploadInfo.repair_projects[last_project_id].project_name;
-                    uploadItem.laborCost = uploadInfo.repair_projects[last_project_id].amount;
+                 //   uploadItem.project = uploadInfo.repair_projects[last_project_id].project_name;
+                //    uploadItem.laborCost = uploadInfo.repair_projects[last_project_id].amount;
                     uploadItem.partName = uploadInfo.repair_items[index].item_name;
-                    uploadItem.price = uploadInfo.repair_items[index].in_price_d;
-                    uploadItem.count = uploadInfo.repair_items[index].amount_d;
-                    uploadItem.amount = uploadInfo.repair_items[index].total_price;
+                    uploadItem.price = uploadInfo.repair_items[index].in_price_d.ToString();
+                    uploadItem.count = uploadInfo.repair_items[index].amount_d.ToString();
+                    uploadItem.amount = uploadInfo.repair_items[index].total_price.ToString();
                     uploadInfoDonghu.details.Add(uploadItem);
                 }
             }
